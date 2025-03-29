@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
+import CourseSelect from "@/Components/CourseSelect";
 
 export default function Index({ courses }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,7 +11,7 @@ export default function Index({ courses }) {
     const { data, setData, post, progress } = useForm({
         file: null,
     });
-
+    
     const columns = [
         {
             name: "ID",
@@ -92,7 +93,7 @@ export default function Index({ courses }) {
         >
             <Head title="Courses" />
 
-            <div className="py-12">
+            <div className="py-5">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         {/* Link to Form to create course */}
@@ -117,6 +118,8 @@ export default function Index({ courses }) {
                                 </button>
                             </form>
 
+                            
+
                             {/* Create Course Button */}
                             <Link
                                 href={route("courses.create")}
@@ -130,7 +133,8 @@ export default function Index({ courses }) {
 
                         <DataTable
                             columns={columns}
-                            data={courses}
+                            data={courses ? courses : []}
+                            noDataComponent="No courses found"
                             direction="auto"
                             fixedHeaderScrollHeight="300px"
                             pagination

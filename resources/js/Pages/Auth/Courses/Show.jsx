@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
+import DataTable from "react-data-table-component";
 
-export default function Show({ course }) {
+export default function Show({ course, user, lecturers }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { delete: destroy } = useForm();
+    console.log(course);
+    console.log(user);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -82,6 +85,17 @@ export default function Show({ course }) {
                             </div>
                         </div>
                         <div className="mt-4 flex justify-end">
+                            { user && user.role === "hod" && (
+                                <Link
+                                    href={route("courses.enroll", course.id)}
+                                    className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200 me-2 mb-2"
+                                    as="button"
+                                >
+                                    Enroll Students
+                                </Link>
+                            )}
+
+                           
                             <Link
                                 href={route("courses.edit", course.id)}
                                 className="text-blue-600 hover:text-blue-900 mr-4"
@@ -96,7 +110,81 @@ export default function Show({ course }) {
                             </button>
                         </div>
                     </div>
+
+                    {/* display lecturers taking course in datatable */}
+                    {  user && user.role == "student" && (
+                                <>
+                                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div className="px-4 py-5 sm:px-6">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">
+                                Lecturers
+                            </h3>
+                        </div>
+                        <div className="border-t border-gray-200">
+                            <dl>
+                                {lecturers.length > 0 ? (
+                                    <DataTable 
+                                        data={lecturers}
+                                        columns={[
+                                            {
+                                                name: "ID",
+                                                selector: (row) => row.id,
+                                                sortable: true,
+                                            },
+                                            {
+                                                name: "Photo",
+                                                selector: (row) => row.photo,
+                                                cell: (row) => (
+                                                    <img
+                                                        src={`/storage/${row.photo}`}
+                                                        alt={row.name}
+                                                        className="h-12 w-12 rounded-full"
+                                                    />
+                                                ),
+                                            },
+                                            {
+                                                name: "Name",
+                                                selector: (row) => row.name,
+                                                sortable: true,
+                                            },
+                                            {
+                                                name: "Email",
+                                                selector: (row) => row.email,
+                                                sortable: true,
+                                            },
+                                            {
+                                                name: "Action",
+                                                selector: (row) => row.action,
+                                                cell: (row) => (
+                                                    <Link
+                                                        href={route("lecturers.evaluate", {
+                                                            'lecturer': row.id, 
+                                                            'course': course.id }
+                                                        )}
+                                                        className="text-blue-600 hover:text-blue-900"
+                                                    >
+                                                        Evaluate Lecturer
+                                                    </Link>
+                                                ),
+                                            }
+                                        ]}
+                                        pagination
+                                        highlightOnHover
+                                    />
+                                ) : (
+                                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                        <dt className="text-sm font-medium text-gray-500">
+                                            No lecturers assigned to this course.
+                                        </dt>
+                                    </div>
+                                )}
+                            </dl>
+                        </div>
                 </div>
+                                </>
+                            )}
+                    
+                </div>            
             </div>
 
             {isModalOpen && (

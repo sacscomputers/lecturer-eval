@@ -1,11 +1,14 @@
 <?php
 
-use App\Http\Controllers\AttendanceController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\MetricController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SemesterController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EvaluationController;
 
 Route::get('/', function () {
@@ -26,9 +29,43 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // users
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    // search for student
+    Route::get('/users/search', [UserController::class, 'searchStudents'])->name('students.search');
+    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::post('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+
+    Route::post('/users/bulk-upload', [UserController::class, 'bulkUpload'])->name('users.bulk-upload');
+
+    // // route to staff.courses
+    // Route::get('lecturer/{lecturer}/courses', [CourseController::class, 'getLecturerCourses'])->name('lecturer.courses');
+    // assign course to lecturer
+    Route::post('lecturer/{lecturer}/courses', [CourseController::class, 'assignCourse'])->name('lecturer.assign-courses');
+    // evaluate lecturer
+    Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
+    // Route::post('lecturer/{lecturer}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
+    // unassign course from lecturer
+    Route::delete('lecturer/{lecturer}/courses/{course}', [CourseController::class, 'unassignCourse'])->name('lecturer.unassign-course');
+    
     // courses
+    Route::get('lecturer/{lecturer}/courses', [CourseController::class, 'assign'])->name('courses.assign');
+    Route::get('course/{course}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
+    Route::post('course/{course}/enroll', [CourseController::class, 'enrollStudents'])->name('courses.enroll-students');
+    Route::post('course/{course}/student/{student}', [CourseController::class, 'unenrollStudents'])->name('courses.unenroll-students');
+    Route::get('/courses/search', [CourseController::class, 'search'])->name('courses.search');
     Route::resource('courses', CourseController::class)->names('courses');
     Route::post('/courses/bulk-upload', [CourseController::class, 'bulkUpload'])->name('courses.bulk-upload');
+   
+    
+
+    // semesters
+    Route::resource('semesters', SemesterController::class)->names('semesters');
 
     // evaluations
     Route::get('/evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
@@ -43,6 +80,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/attendance/{attendance}', [AttendanceController::class, 'show'])->name('attendance.show');
     Route::post('/attendance', [AttendanceController::class, 'create'])->name('attendance.update');
     Route::delete('/attendance', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
+
+    // Metrics
+    Route::resource('metrics', MetricController::class)->names('metrics');
+    Route::get('/metrics/search', [MetricController::class, 'search'])->name('metrics.search');
 });
 
 require __DIR__.'/auth.php';

@@ -27,6 +27,7 @@
         "datatables.net-dt": "^2.2.2",
         "datatables.net-react": "^1.0.0",
         "react-data-table-component": "^7.7.0",
+        "react-select": "^5.10.1",
         "simple-datatables": "^10.0.0",
         "styled-components": "^6.1.16"
     }

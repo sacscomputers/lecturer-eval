@@ -36,7 +36,7 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'photo' => 'nullable|image|max:1024',
-            'role' => 'nullable|in:admin,student,staff,course_rep',
+            'role' => 'nullable|in:admin,student,lecturer,hod,course_rep',
         ]);
 
         $user = User::create([

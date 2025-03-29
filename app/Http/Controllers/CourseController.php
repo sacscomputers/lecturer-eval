@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Course;
+use App\Models\Metric;
 use Illuminate\Http\Request;
 use Dotenv\Store\File\Reader;
 use Illuminate\Support\Facades\Storage;
@@ -16,11 +18,29 @@ class CourseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::all();
+        $courses = [];
+        // check if user is a lecturer
+        if ($request->user()->isLecturer()) {
+            $courses = $request->user()->coursesAsLecturer()->get();
+            return Inertia::render('Auth/Courses/Index', compact('courses'));
+        }
         
-        return Inertia::render('Auth/Courses/Index', compact('courses'));
+        // check if user is a student
+        if ($request->user()->isStudent()) {
+           $courses = $request->user()->coursesAsStudent()->get();
+            return Inertia::render('Auth/Courses/Index', compact('courses'));
+        }
+        // check if user is an admin
+        if ($request->user()->isAdmin()) {
+            $courses = Course::all();
+            return Inertia::render('Auth/Courses/Index', compact('courses'));
+        }
+        // if user is not a lecturer or student, redirect to home
+        return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        
+        
     }
 
     /**
@@ -46,9 +66,11 @@ class CourseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Course $course)
+    public function show(Request $request, Course $course)
     {
-        return Inertia::render('Auth/Courses/Show', compact('course'));
+        $lecturers = $course->lecturers()->get();
+        $user = $request->user();
+        return Inertia::render('Auth/Courses/Show', compact('course', 'user', 'lecturers'));
     }
 
     /**
@@ -110,6 +132,158 @@ class CourseController extends Controller
             fclose($handle);
         }
     
-        return redirect()->route('courses.index')->with('success', 'Courses uploaded successfully.');
+        return redirect()->route('courses.assign')->with('success', 'Courses uploaded successfully.');
+    }
+
+    /** 
+     * Get courses for a lecturer.
+     */
+    public function getLecturerCourses(User $lecturer)
+    {
+        $courses = $lecturer->coursesAsLecturer()->get();
+        return Inertia::render('Auth/Courses/Index', compact('courses', 'lecturer'));
+    }
+    
+    /**
+     * Search for courses.
+     */
+    public function search(Request $request)
+    {
+        $courses = Course::where('title', 'like', '%'.$request->search.'%')
+            ->orWhere('code', 'like', '%'.$request->search.'%')
+            ->get();
+        return response()->json($courses);
+    }   
+
+    // show page for assigning courses to users
+    public function assign(User $lecturer)
+    {
+        // dd($lecturer);
+        if (!$lecturer->isLecturer()) {
+            return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
+        }
+        $coursesAssigned = $lecturer->coursesAsLecturer()->get();
+        $courses = Course::all();
+        return Inertia::render('Auth/Courses/AssignCourses', compact('lecturer', 'courses', 'coursesAssigned'));
+    }
+
+    // assign Course to User
+
+    public function assignCourse(Request $request, User $lecturer)
+    {
+        if (!$lecturer->isLecturer()) {
+            return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
+        }
+
+        $request->validate([
+            'course_ids' => 'required|array',
+            'course_ids.*' => 'exists:courses,id',
+        ]);
+    
+        $lecturer->coursesAsLecturer()->sync($request->course_ids);
+        return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])->with('success', 'Course unassigned successfully.');
+    }
+
+    // unassign Course from User
+    public function unassignCourse(User $lecturer, Course $course)
+    {
+        if (!$lecturer->isLecturer()) {
+            return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
+        }
+
+        $lecturer->coursesAsLecturer()->detach($course->id);
+        return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])->with('success', 'Course unassigned successfully.');
+    }
+
+    // show page for enrolling students in course
+    public function enroll(Course $course)
+    {
+        $students = User::where('role', 'student')->get();
+        $studentsEnrolled = $course->students()->get();
+        return Inertia::render('Auth/Courses/EnrollStudents', compact('course', 'students', 'studentsEnrolled'));
+    }
+    // enroll students in course
+    public function enrollStudents(Request $request, Course $course)
+    {
+        $request->validate([
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:users,id',
+        ]);
+
+        $course->students()->sync($request->student_ids);
+        return back()->with('success', 'Students enrolled successfully.');
+    }
+    // unenroll students from course
+    public function unenrollStudents(Request $request, Course $course, User $student)
+    {
+
+        // check if $student is enrolled in course
+        if (!$course->students()->where('user_id', $student->id)->exists()) {
+            return Redirect::route('courses.show', ['course' => $course->id])->with('error', 'Student is not enrolled in this course.');
+        }
+
+        $course->students()->detach($student->id);
+        return back()->with('success', 'Students unenrolled successfully.');
+    }
+    // get students in course
+    public function getCourseStudents(Course $course)
+    {
+        $students = $course->students()->get();
+        return Inertia::render('Auth/Courses/Students', compact('course', 'students'));
+    }
+    // get courses for a student
+    public function getStudentCourses(User $student)
+    {
+        $courses = $student->courses()->get();
+        return Inertia::render('Auth/Courses/StudentCourses', compact('student', 'courses'));
+    }
+
+    // get lecturers for a course
+    public function getCourseLecturers(Course $course)
+    {
+        $lecturers = $course->lecturers()->get();
+        return Inertia::render('Auth/Courses/Lecturers', compact('course', 'lecturers'));
+    }
+
+    // show evaluation form for lecturer
+    public function evaluateLecturerForm(User $lecturer, Course $course)
+    {
+        $metrics = Metric::all();
+        // $courses = $lecturer->coursesAsLecturer()->get();
+        return Inertia::render('Auth/Users/Evaluate', compact('lecturer', 'course', 'metrics'));
+    }
+
+    // evaluate lecturer
+    public function evaluateLecturer(Request $request, User $lecturer)
+    {
+        dd($request->all());
+        // check if user is a student
+        if (!$request->user()->isStudent()) {
+            return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
+        }
+        // check if lecturer is assigned to course
+        if (!$lecturer->coursesAsLecturer()->where('course_id', $request->course_id)->exists()) {
+            return Redirect::route('courses.index')->with('error', 'Lecturer is not assigned to this course.');
+        }
+        // Task: check if lecturer has already been evaluated
+
+        $request->validate([
+            'metrics' => 'required|array',
+            'metrics.*.metric_id' => 'required|exists:metrics,id',
+            'metrics.*.score' => 'required|integer|min:1|max:5',
+        ]);
+
+        // save evaluation
+        foreach ($request->metrics as $metric) {
+            $lecturer->evaluations()->create([
+                'course_id' => $request->course_id,
+                'metric_id' => $metric['metric_id'],
+                'score' => $metric['score'],
+                'student_id' => $request->user()->id,
+            ]);
+
+        }
+
+        return back()->with('success', 'Lecturer evaluated successfully.');
     }
 }

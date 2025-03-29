@@ -33,17 +33,24 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
 
                                 <NavLink
+                                    href={route("users.index")}
+                                    active={route().current("users.index")}
+                                >
+                                    Users
+                                </NavLink>
+
+                                <NavLink
                                     href={route("courses.index")}
                                     active={route().current("courses.index")}
                                 >
-                                    Enrolled Courses
+                                    Courses
                                 </NavLink>
 
                                 <NavLink
                                     href={route("evaluations.index")}
                                     active={route().current("evaluations.index")}
                                 >
-                                    Pending Evaluations
+                                    Evaluation
                                 </NavLink>
 
                                 <NavLink
@@ -167,17 +174,23 @@ export default function AuthenticatedLayout({ header, children }) {
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                                    href={route("users.index")}
+                                    active={route().current("users.index")}
+                                >
+                                    Users
+                                </ResponsiveNavLink>
+                        <ResponsiveNavLink
                                     href={route("courses.index")}
                                     active={route().current("courses.index")}
                                 >
-                                    Enrolled Courses
+                                    Courses
                                 </ResponsiveNavLink>
 
                                 <ResponsiveNavLink
                                     href={route("evaluations.index")}
                                     active={route().current("evaluations.index")}
                                 >
-                                    Pending Evaluations
+                                    Evaluation
                                 </ResponsiveNavLink>
 
                                 <ResponsiveNavLink

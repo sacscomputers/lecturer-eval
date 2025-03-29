@@ -136,7 +136,7 @@ export default function Register() {
                         onChange={(e) => setData("role", e.target.value)}
                         required
                     >
-                        <option value="staff">Staff</option>
+                        <option value="lecturer">Lecturer</option>
                         <option value="student">Student</option>
                         <option value="course_rep">Course Rep</option>
                         <option value="hod">HOD</option>

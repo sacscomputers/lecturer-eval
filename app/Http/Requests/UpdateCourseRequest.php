@@ -22,10 +22,10 @@ class UpdateCourseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'photo' => ['nullable', 'image', 'max:1024'],
+            'title' => ['sometimes', 'string', 'max:255'],
+            'code' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'string'],
+            'photo' => ['sometimes', 'image', 'max:1024'],
         ];
     }
 }
