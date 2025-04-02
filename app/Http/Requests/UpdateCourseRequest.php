@@ -25,7 +25,7 @@ class UpdateCourseRequest extends FormRequest
             'title' => ['sometimes', 'string', 'max:255'],
             'code' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'string'],
-            'photo' => ['sometimes', 'image', 'max:1024'],
+            'photo' => ['nullable', 'image', 'max:1024'],
         ];
     }
 }

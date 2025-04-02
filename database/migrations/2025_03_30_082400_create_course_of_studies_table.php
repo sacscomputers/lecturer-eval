@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('courses_of_study', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('code', 10)->unique(); 
+            $table->string('code', 20)->unique();
             $table->text('description')->nullable();
+            $table->foreignId('department_id')->constrained()->onDelete('cascade'); // Assuming a departments table exists
+            $table->integer('duration_years')->default(4);
+            $table->enum('degree_type', ['BSc', 'BA', 'MSc', 'PhD', 'Diploma']);
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('courses_of_study');
     }
 };

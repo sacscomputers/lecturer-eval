@@ -4,7 +4,7 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { Head, useForm } from "@inertiajs/react";
 
-export default function Evaluate({ lecturer, metrics }) {
+export default function Evaluate({ lecturer, metrics, course }) {
     const { data, setData, post, processing, errors } = useForm({
         scores: {},
     });
@@ -18,7 +18,7 @@ export default function Evaluate({ lecturer, metrics }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("lecturers.evaluate", lecturer.id));
+        post(route("lecturers.evaluate", {'lecturer': lecturer.id, 'course': course.id}), );
     };
 
     return (

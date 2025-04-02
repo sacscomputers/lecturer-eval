@@ -6,6 +6,7 @@ use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Course;
 use App\Models\Metric;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Dotenv\Store\File\Reader;
 use Illuminate\Support\Facades\Storage;
@@ -20,27 +21,29 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-        $courses = [];
+        
+        // check if user is an admin
+        if ($request->user()->isAdmin()) {
+            $courses = Course::with('department')->get();
+            return Inertia::render('Auth/Courses/Index', compact('courses'));
+        }
+
         // check if user is a lecturer
         if ($request->user()->isLecturer()) {
+           
             $courses = $request->user()->coursesAsLecturer()->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
         }
-        
+
         // check if user is a student
         if ($request->user()->isStudent()) {
-           $courses = $request->user()->coursesAsStudent()->get();
+            
+            $courses = $request->user()->coursesAsStudent()->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
         }
-        // check if user is an admin
-        if ($request->user()->isAdmin()) {
-            $courses = Course::all();
-            return Inertia::render('Auth/Courses/Index', compact('courses'));
-        }
+
         // if user is not a lecturer or student, redirect to home
         return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
-        
-        
     }
 
     /**
@@ -48,7 +51,8 @@ class CourseController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Auth/Courses/Create');
+        $departments = Department::all();
+        return Inertia::render('Auth/Courses/Create', compact('departments'));
     }
 
     /**
@@ -60,7 +64,7 @@ class CourseController extends Controller
         $validatedData['photo'] = $request->file('photo') ? $request->file('photo')->store('courses', 'public') : null;
         Course::create($validatedData);
 
-        return redirect(route('courses.index', absolute: false));   
+        return redirect(route('courses.index', absolute: false));
     }
 
     /**
@@ -69,8 +73,11 @@ class CourseController extends Controller
     public function show(Request $request, Course $course)
     {
         $lecturers = $course->lecturers()->get();
+        $students = $course->students()->get();
         $user = $request->user();
-        return Inertia::render('Auth/Courses/Show', compact('course', 'user', 'lecturers'));
+        $department = $course->department;
+    
+        return Inertia::render('Auth/Courses/Show', compact('course', 'user', 'lecturers', 'students', 'department'));
     }
 
     /**
@@ -78,7 +85,8 @@ class CourseController extends Controller
      */
     public function edit(Course $course)
     {
-        return Inertia::render('Auth/Courses/Edit', compact('course'));
+        $departments = Department::all();
+        return Inertia::render('Auth/Courses/Edit', compact('course', 'departments'));
     }
 
     /**
@@ -87,6 +95,7 @@ class CourseController extends Controller
     public function update(UpdateCourseRequest $request, Course $course)
     {
         $validatedData = $request->validated();
+       
         $validatedData['photo'] = $request->file('photo') ? $request->file('photo')->store('courses', 'public') : $course->photo;
         $course->update($validatedData);
 
@@ -111,16 +120,16 @@ class CourseController extends Controller
         $request->validate([
             'file' => 'required|mimes:csv,txt',
         ]);
-    
+
         $path = $request->file('file')->store('uploads', 'public');
         $fullPath = storage_path('app/public/' . $path);
-    
+
         if (($handle = fopen($fullPath, 'r')) !== false) {
             $header = fgetcsv($handle); // Read the first line as headers
-    
+
             while (($row = fgetcsv($handle)) !== false) {
                 $data = array_combine($header, $row); // Map CSV row to headers
-    
+
                 Course::create([
                     'title' => $data['title'] ?? null,
                     'code' => $data['code'] ?? null,
@@ -128,11 +137,11 @@ class CourseController extends Controller
                     'description' => $data['description'] ?? null,
                 ]);
             }
-    
+
             fclose($handle);
         }
-    
-        return redirect()->route('courses.assign')->with('success', 'Courses uploaded successfully.');
+
+        return redirect()->route('courses.index')->with('success', 'Courses uploaded successfully.');
     }
 
     /** 
@@ -143,17 +152,17 @@ class CourseController extends Controller
         $courses = $lecturer->coursesAsLecturer()->get();
         return Inertia::render('Auth/Courses/Index', compact('courses', 'lecturer'));
     }
-    
+
     /**
      * Search for courses.
      */
     public function search(Request $request)
     {
-        $courses = Course::where('title', 'like', '%'.$request->search.'%')
-            ->orWhere('code', 'like', '%'.$request->search.'%')
+        $courses = Course::where('title', 'like', '%' . $request->search . '%')
+            ->orWhere('code', 'like', '%' . $request->search . '%')
             ->get();
         return response()->json($courses);
-    }   
+    }
 
     // show page for assigning courses to users
     public function assign(User $lecturer)
@@ -179,10 +188,25 @@ class CourseController extends Controller
             'course_ids' => 'required|array',
             'course_ids.*' => 'exists:courses,id',
         ]);
-    
-        $lecturer->coursesAsLecturer()->sync($request->course_ids);
-        return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])->with('success', 'Course unassigned successfully.');
+
+        // Get currently assigned course IDs
+        $existingCourses = $lecturer->coursesAsLecturer()->pluck('courses.id')->toArray();
+
+        // Filter out already assigned courses
+        $newCourses = array_diff($request->course_ids, $existingCourses);
+
+        if (empty($newCourses)) {
+            return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])
+                ->with('info', 'No new courses were assigned.');
+        }
+
+        // Assign only new courses without removing existing ones
+        $lecturer->coursesAsLecturer()->attach($newCourses);
+
+        return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])
+            ->with('success', 'Courses assigned successfully.');
     }
+
 
     // unassign Course from User
     public function unassignCourse(User $lecturer, Course $course)
@@ -209,10 +233,23 @@ class CourseController extends Controller
             'student_ids' => 'required|array',
             'student_ids.*' => 'exists:users,id',
         ]);
-
-        $course->students()->sync($request->student_ids);
+    
+        // Get currently enrolled student IDs
+        $existingStudents = $course->students()->pluck('users.id')->toArray();
+    
+        // Filter out already enrolled students
+        $newStudents = array_diff($request->student_ids, $existingStudents);
+    
+        if (empty($newStudents)) {
+            return back()->with('info', 'No new students were enrolled.');
+        }
+    
+        // Enroll only new students
+        $course->students()->attach($newStudents);
+    
         return back()->with('success', 'Students enrolled successfully.');
     }
+    
     // unenroll students from course
     public function unenrollStudents(Request $request, Course $course, User $student)
     {
@@ -254,36 +291,39 @@ class CourseController extends Controller
     }
 
     // evaluate lecturer
-    public function evaluateLecturer(Request $request, User $lecturer)
+    public function evaluateLecturer(Request $request, User $lecturer, Course $course)
     {
-        dd($request->all());
-        // check if user is a student
+        // Check if the user is a student
         if (!$request->user()->isStudent()) {
             return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
         }
-        // check if lecturer is assigned to course
-        if (!$lecturer->coursesAsLecturer()->where('course_id', $request->course_id)->exists()) {
+
+        // Check if the lecturer is assigned to the course
+        if (!$lecturer->coursesAsLecturer()->where('course_id', $course->id)->exists()) {
             return Redirect::route('courses.index')->with('error', 'Lecturer is not assigned to this course.');
         }
-        // Task: check if lecturer has already been evaluated
 
+        // Validate the request
         $request->validate([
-            'metrics' => 'required|array',
-            'metrics.*.metric_id' => 'required|exists:metrics,id',
-            'metrics.*.score' => 'required|integer|min:1|max:5',
+            'scores' => 'required|array',
+            'scores.*' => 'required|integer|min:1|max:5', // Assuming ratings are between 1 and 5
         ]);
-
-        // save evaluation
-        foreach ($request->metrics as $metric) {
+        
+        // Save evaluations for each metric
+        foreach ($request->scores as $metricId => $rating) {
+            // Check if the metric exists
+            if (!Metric::find($metricId)) {
+                return back()->with('error', 'Invalid metric ID.');
+            }
             $lecturer->evaluations()->create([
-                'course_id' => $request->course_id,
-                'metric_id' => $metric['metric_id'],
-                'score' => $metric['score'],
-                'student_id' => $request->user()->id,
+                'course_id' => $course->id,
+                'metric_id' => $metricId,
+                'rating' => $rating,
+                'user_id' => $request->user()->id, // The student who is evaluating
+                'lecturer_id' => $lecturer->id,
             ]);
-
         }
 
-        return back()->with('success', 'Lecturer evaluated successfully.');
+        return Redirect::route('courses.show', $course->id)->with('success', 'Lecturer evaluated successfully.');
     }
 }

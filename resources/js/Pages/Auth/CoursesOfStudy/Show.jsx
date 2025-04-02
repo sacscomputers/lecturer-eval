@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 
-export default function Show({ course, department, lecturers, students }) {
+export default function Show({ courseOfStudy, department, lecturers }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { delete: destroy } = useForm();
 
@@ -15,7 +15,7 @@ export default function Show({ course, department, lecturers, students }) {
     };
 
     const handleDelete = () => {
-        destroy(route("courses.destroy", course.id), {
+        destroy(route("coursesOfStudy.destroy", courseOfStudy.id), {
             onSuccess: () => closeModal(),
         });
     };
@@ -24,11 +24,11 @@ export default function Show({ course, department, lecturers, students }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Course Details
+                    Course of Study Details
                 </h2>
             }
         >
-            <Head title="Course Details" />
+            <Head title="Course of Study Details" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
@@ -36,7 +36,7 @@ export default function Show({ course, department, lecturers, students }) {
                         {/* Back Button */}
                         <div className="flex justify-end mb-4">
                             <Link
-                                href={route("courses.index")}
+                                href={route("coursesOfStudy.index")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
                                 as="button"
                             >
@@ -44,11 +44,11 @@ export default function Show({ course, department, lecturers, students }) {
                             </Link>
                         </div>
 
-                        {/* Course Details */}
+                        {/* Course of Study Details */}
                         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                             <div className="px-4 py-5 sm:px-6">
                                 <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                    {course.title}
+                                    {courseOfStudy.name}
                                 </h3>
                             </div>
                             <div className="border-t border-gray-200">
@@ -59,7 +59,7 @@ export default function Show({ course, department, lecturers, students }) {
                                             Code
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                            {course.code}
+                                            {courseOfStudy.code}
                                         </dd>
                                     </div>
 
@@ -69,7 +69,27 @@ export default function Show({ course, department, lecturers, students }) {
                                             Department
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                            {department?.name || "N/A"}
+                                            {courseOfStudy.department.name || "N/A"}
+                                        </dd>
+                                    </div>
+
+                                    {/* Duration (Years) */}
+                                    <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                        <dt className="text-sm font-medium text-gray-500">
+                                            Duration (Years)
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                            {courseOfStudy.duration_years}
+                                        </dd>
+                                    </div>
+
+                                    {/* Degree Type */}
+                                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                        <dt className="text-sm font-medium text-gray-500">
+                                            Degree Type
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                            {courseOfStudy.degree_type}
                                         </dd>
                                     </div>
 
@@ -79,25 +99,7 @@ export default function Show({ course, department, lecturers, students }) {
                                             Description
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                            {course.description || "N/A"}
-                                        </dd>
-                                    </div>
-
-                                    {/* Photo */}
-                                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                        <dt className="text-sm font-medium text-gray-500">
-                                            Photo
-                                        </dt>
-                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                            {course.photo ? (
-                                                <img
-                                                    src={`/storage/${course.photo}`}
-                                                    alt={course.title}
-                                                    className="h-48 w-48 object-cover rounded-lg"
-                                                />
-                                            ) : (
-                                                "N/A"
-                                            )}
+                                            {courseOfStudy.description || "N/A"}
                                         </dd>
                                     </div>
                                 </dl>
@@ -107,7 +109,7 @@ export default function Show({ course, department, lecturers, students }) {
                         {/* Action Buttons */}
                         <div className="mt-4 flex justify-end">
                             <Link
-                                href={route("courses.edit", course.id)}
+                                href={route("coursesOfStudy.edit", courseOfStudy.id)}
                                 className="text-blue-600 hover:text-blue-900 mr-4"
                             >
                                 Edit
@@ -157,43 +159,6 @@ export default function Show({ course, department, lecturers, students }) {
                             </div>
                         </div>
                     )}
-
-                    {/* Students Enrolled in the Course */}
-                    {students && students.length > 0 && (
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                    Students
-                                </h3>
-                            </div>
-                            <div className="border-t border-gray-200">
-                                <ul className="divide-y divide-gray-200">
-                                    {students.map((student) => (
-                                        <li
-                                            key={student.id}
-                                            className="px-4 py-4 sm:px-6"
-                                        >
-                                            <div className="flex items-center space-x-4">
-                                                <img
-                                                    src={`/storage/${student.photo}`}
-                                                    alt={student.name}
-                                                    className="h-12 w-12 rounded-full"
-                                                />
-                                                <div>
-                                                    <h4 className="text-sm font-medium text-gray-900">
-                                                        {student.name}
-                                                    </h4>
-                                                    <p className="text-sm text-gray-500">
-                                                        {student.email}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -205,8 +170,8 @@ export default function Show({ course, department, lecturers, students }) {
                             Confirm Delete
                         </h2>
                         <p>
-                            Are you sure you want to delete the course{" "}
-                            <strong>{course.title}</strong>?
+                            Are you sure you want to delete the course of study{" "}
+                            <strong>{courseOfStudy.name}</strong>?
                         </p>
                         <div className="mt-4 flex justify-end">
                             <button

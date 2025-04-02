@@ -3,10 +3,13 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
 
-export default function Index({ coursesOfStudy }) {
+export default function Index({ academicYears }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [selectedAcademicYear, setSelectedAcademicYear] = useState(null);
     const { delete: destroy } = useForm();
+    const { data, setData, post, progress } = useForm({
+        file: null,
+    });
 
     const columns = [
         {
@@ -18,33 +21,25 @@ export default function Index({ coursesOfStudy }) {
             selector: (row) => row.name,
         },
         {
-            name: "Code",
-            selector: (row) => row.code,
+            name: "Start Date",
+            selector: (row) => row.start_date,
         },
         {
-            name: "Department",
-            selector: (row) => row.department?.name || "N/A",
-        },
-        {
-            name: "Duration (Years)",
-            selector: (row) => row.duration_years,
-        },
-        {
-            name: "Degree Type",
-            selector: (row) => row.degree_type,
+            name: "End Date",
+            selector: (row) => row.end_date,
         },
         {
             name: "Action",
             selector: (row) => (
                 <>
                     <Link
-                        href={route("coursesOfStudy.show", row.id)}
+                        href={route("academicYears.show", row.id)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                     >
                         View
                     </Link>
                     <Link
-                        href={route("coursesOfStudy.edit", row.id)}
+                        href={route("academicYears.edit", row.id)}
                         className="text-yellow-600 hover:text-yellow-900 mr-4"
                     >
                         Edit
@@ -60,18 +55,23 @@ export default function Index({ coursesOfStudy }) {
         },
     ];
 
-    const openModal = (course) => {
-        setSelectedCourse(course);
+    function submit(e) {
+        e.preventDefault();
+        post("/academicYears/bulk-upload");
+    }
+
+    const openModal = (academicYear) => {
+        setSelectedAcademicYear(academicYear);
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
-        setSelectedCourse(null);
+        setSelectedAcademicYear(null);
         setIsModalOpen(false);
     };
 
     const handleDelete = () => {
-        destroy(route("coursesOfStudy.destroy", selectedCourse.id), {
+        destroy(route("academicYears.destroy", selectedAcademicYear.id), {
             onSuccess: () => closeModal(),
         });
     };
@@ -80,30 +80,50 @@ export default function Index({ coursesOfStudy }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Courses of Study
+                    AcademicYears
                 </h2>
             }
         >
-            <Head title="Courses of Study" />
+            <Head title="AcademicYears" />
 
-            <div className="py-5">
+            <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        {/* Create Course of Study Button */}
+                        {/* Bulk Upload and Create AcademicYear */}
                         <div className="flex justify-between items-center mb-4">
+                            {/* Bulk Upload AcademicYears */}
+                            <form
+                                onSubmit={submit}
+                                className="flex items-center gap-2"
+                            >
+                                <input
+                                    className="text-sm text-gray-900 border border-gray-300 rounded-l-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 px-3 py-2"
+                                    type="file"
+                                    onChange={(e) =>
+                                        setData("file", e.target.files[0])
+                                    }
+                                />
+                                <button
+                                    type="submit"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition"
+                                >
+                                    Bulk Upload
+                                </button>
+                            </form>
+
+                            {/* Create AcademicYear Button */}
                             <Link
-                                href={route("coursesOfStudy.create")}
+                                href={route("academicYears.create")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
                             >
-                                Create Course of Study
+                                Create AcademicYear
                             </Link>
                         </div>
 
-                        {/* Courses of Study List */}
+                        {/* AcademicYears list */}
                         <DataTable
                             columns={columns}
-                            data={coursesOfStudy ? coursesOfStudy : []}
-                            noDataComponent="No courses of study found"
+                            data={academicYears}
                             direction="auto"
                             fixedHeaderScrollHeight="300px"
                             pagination
@@ -115,17 +135,13 @@ export default function Index({ coursesOfStudy }) {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <h2 className="text-lg font-semibold mb-4">
                             Confirm Delete
                         </h2>
-                        <p>
-                            Are you sure you want to delete the course of study{" "}
-                            <strong>{selectedCourse?.name}</strong>?
-                        </p>
+                        <p>Are you sure you want to delete this academicYear?</p>
                         <div className="mt-4 flex justify-end">
                             <button
                                 onClick={closeModal}

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Course extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['title', 'code', 'description', 'photo'];
+    protected $fillable = ['title', 'code', 'description', 'photo', 'department_id'];
 
     // relationships
     // students enrolled in the course
@@ -21,6 +21,12 @@ class Course extends Model
     public function lecturers()
     {
         return $this->belongsToMany(User::class, 'course_lecturer', 'course_id', 'user_id');
+    }
+
+    // department offering the course
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 }
 

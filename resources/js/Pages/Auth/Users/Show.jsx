@@ -1,8 +1,20 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
+import { Bar } from "react-chartjs-2";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from "chart.js";
 
-export default function Show({ user }) {
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+export default function Show({ user, evaluations, metrics }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { delete: destroy } = useForm();
 
@@ -20,6 +32,31 @@ export default function Show({ user }) {
         });
     };
 
+    // Prepare data for the bar chart
+    const chartData = {
+        labels: metrics.map((metric) => metric.name),
+        datasets: [
+            {
+                label: "Average Rating",
+                data: metrics.map((metric) => {
+                    const metricEvaluations = evaluations.filter(
+                        (evaluation) => evaluation.metric_id === metric.id
+                    );
+                    const totalRating = metricEvaluations.reduce(
+                        (sum, evaluation) => sum + evaluation.rating,
+                        0
+                    );
+                    return metricEvaluations.length
+                        ? totalRating / metricEvaluations.length
+                        : 0;
+                }),
+                backgroundColor: "rgba(75, 192, 192, 0.6)",
+                borderColor: "rgba(75, 192, 192, 1)",
+                borderWidth: 1,
+            },
+        ],
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -32,6 +69,7 @@ export default function Show({ user }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                    {/* Main Card */}
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <div className="flex justify-end mb-4">
                             <Link
@@ -50,6 +88,7 @@ export default function Show({ user }) {
                             </div>
                             <div className="border-t border-gray-200">
                                 <dl>
+                                    {/* Photo */}
                                     <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                         <dt className="text-sm font-medium text-gray-500">
                                             Photo
@@ -58,10 +97,12 @@ export default function Show({ user }) {
                                             <img
                                                 src={`/storage/${user.photo}`}
                                                 alt={user.name}
-                                                className="h-48 "
+                                                className="h-48"
                                             />
                                         </dd>
                                     </div>
+
+                                    {/* Email */}
                                     <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                         <dt className="text-sm font-medium text-gray-500">
                                             Email
@@ -70,6 +111,8 @@ export default function Show({ user }) {
                                             {user.email}
                                         </dd>
                                     </div>
+
+                                    {/* Role */}
                                     <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                         <dt className="text-sm font-medium text-gray-500">
                                             Role
@@ -78,6 +121,51 @@ export default function Show({ user }) {
                                             {user.role}
                                         </dd>
                                     </div>
+
+                                    {/* Student-Specific Fields */}
+                                    {(user.role === "student" ||
+                                        user.role === "course_rep") && (
+                                        <>
+                                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                <dt className="text-sm font-medium text-gray-500">
+                                                    Matric Number
+                                                </dt>
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {user.matric_number}
+                                                </dd>
+                                            </div>
+                                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                <dt className="text-sm font-medium text-gray-500">
+                                                    Level
+                                                </dt>
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {user.level}
+                                                </dd>
+                                            </div>
+                                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                                <dt className="text-sm font-medium text-gray-500">
+                                                    Course of Study
+                                                </dt>
+                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                    {user.course_of_study?.name ||
+                                                        "N/A"}
+                                                </dd>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Lecturer-Specific Fields */}
+                                    {(user.role === "lecturer" ||
+                                        user.role === "hod") && (
+                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt className="text-sm font-medium text-gray-500">
+                                                Staff ID
+                                            </dt>
+                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                {user.staff_id}
+                                            </dd>
+                                        </div>
+                                    )}
                                 </dl>
                             </div>
                         </div>
@@ -88,7 +176,6 @@ export default function Show({ user }) {
                             >
                                 Edit
                             </Link>
-                            {/* if user is lecturer  show Link to assign courses */}
                             {user.role === "lecturer" && (
                                 <Link
                                     href={route("courses.assign", user.id)}
@@ -103,6 +190,39 @@ export default function Show({ user }) {
                             >
                                 Delete
                             </button>
+                        </div>
+                    </div>
+
+                    {/* Evaluation Summary and Bar Chart */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Evaluation Summary */}
+                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                            <h3 className="text-lg font-semibold mb-4">
+                                Evaluation Summary
+                            </h3>
+                            <ul className="list-disc pl-5">
+                                <li>
+                                    Total Evaluations: {evaluations.length}
+                                </li>
+                                <li>
+                                    Average Rating:{" "}
+                                    {(
+                                        evaluations.reduce(
+                                            (sum, evaluation) =>
+                                                sum + evaluation.rating,
+                                            0
+                                        ) / evaluations.length || 0
+                                    ).toFixed(2)}
+                                </li>
+                            </ul>
+                        </div>
+
+                        {/* Bar Chart */}
+                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                            <h3 className="text-lg font-semibold mb-4">
+                                Performance by Metric
+                            </h3>
+                            <Bar data={chartData} />
                         </div>
                     </div>
                 </div>

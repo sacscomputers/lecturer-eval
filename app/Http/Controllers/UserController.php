@@ -4,7 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\Metric;
+use App\Models\Student;
+use App\Models\Lecturer;
+use App\Models\Evaluation;
 use Illuminate\Http\Request;
+use App\Models\CourseOfStudy;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Support\Facades\Redirect;
@@ -26,8 +32,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        // dd("I am Here!");
-        return Inertia::render('Auth/Users/Create');
+        $coursesOfStudy = CourseOfStudy::all();
+        return Inertia::render('Auth/Users/Create', compact('coursesOfStudy'));
     }
 
     /**
@@ -37,6 +43,7 @@ class UserController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['photo'] = $request->file('photo') ? $request->file('photo')->store('users', 'public') : null;
+        
         User::create($validatedData);
 
         return redirect(route('users.index', absolute: false));
@@ -47,7 +54,11 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return Inertia::render('Auth/Users/Show', compact('user'));
+        $evaluations = Evaluation::where('lecturer_id', $user->id)->get();
+        $metrics = Metric::all();
+        $user->load('courseOfStudy');
+        // dd($user);
+        return Inertia::render('Auth/Users/Show', compact('user', 'metrics', 'evaluations'));
     }
 
     /**
@@ -55,7 +66,9 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return Inertia::render('Auth/Users/Edit', compact('user'));
+        $coursesOfStudy = CourseOfStudy::all();
+        $user->load('courseOfStudy');
+        return Inertia::render('Auth/Users/Edit', compact('user', 'coursesOfStudy'));
     }
 
     /**
@@ -66,6 +79,15 @@ class UserController extends Controller
         $validatedData = $request->validated();
         // dd($validatedData);
         $validatedData['photo'] = $request->file('photo') ? $request->file('photo')->store('users', 'public') : $user->photo;
+        if ($request->role == 'student' || $request->role == 'course_rep') {
+            $validatedData['role'] = 'student';
+            $validatedData['matric_number'] = $request->matric_number;
+            $validatedData['level'] = $request->level;
+            $validatedData['course_of_study_id'] = $request->course_of_study_id;
+        } else if ($request->role == 'lecturer' || $request->role == 'hod') {
+            $validatedData['role'] = 'lecturer';
+            $validatedData['staff_id'] = $request->staff_id;
+        }
         $user->update($validatedData);
 
         return redirect(route('users.index', absolute: false));

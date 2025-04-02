@@ -26,6 +26,7 @@ class StoreCourseRequest extends FormRequest
             'code' => 'required|string|max:255|unique:courses,code',
             'description' => 'nullable|string',
             'photo' => 'required|image|max:2048',
+            'department_id' => 'required|exists:departments,id',
         ];
     }
 }

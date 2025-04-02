@@ -15,18 +15,18 @@ import {
 
 import "ckeditor5/ckeditor5.css";
 
-export default function Edit({ course }) {
+export default function Edit({ department }) {
     const { data, setData, put, processing, errors, progress } = useForm({
-        title: course.title || "",
-        code: course.code || "",
-        photo: null,
-        description: course.description || "",
+        name: department.name || "",
+        code: department.code || "",
+        // photo: null,
+        description: department.description || "",
     });
 
     const submit = (e) => {
         e.preventDefault();
 
-        put(route("courses.update", course.id));
+        put(route("departments.update", department.id));
     };
 
     return (
@@ -42,10 +42,10 @@ export default function Edit({ course }) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        {/* Link to go back to courses list */}
+                        {/* Link to go back to departments list */}
                         <div className="flex justify-end mb-4">
                             <Link
-                                href={route("courses.index")}
+                                href={route("departments.index")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200 me-2 mb-2"
                                 as="button"
                             >
@@ -56,17 +56,17 @@ export default function Edit({ course }) {
                         <div className="mt-8 sm:mx-auto sm:w-full">
                             <form onSubmit={submit}>
                                 <div>
-                                    <InputLabel htmlFor="title" value="Title" />
+                                    <InputLabel htmlFor="name" value="Title" />
 
                                     <TextInput
-                                        id="title"
-                                        name="title"
-                                        value={data.title}
+                                        id="name"
+                                        name="name"
+                                        value={data.name}
                                         className="mt-1 block w-full"
-                                        autoComplete="title"
+                                        autoComplete="name"
                                         isFocused={true}
                                         onChange={(e) =>
-                                            setData("title", e.target.value)
+                                            setData("name", e.target.value)
                                         }
                                         required
                                     />
@@ -100,7 +100,7 @@ export default function Edit({ course }) {
                                 </div>
 
                                 {/* add input for photo */}
-                                <div className="mt-4">
+                                {/* <div className="mt-4">
                                     <InputLabel
                                         htmlFor="photo"
                                         value="Photo"
@@ -129,7 +129,7 @@ export default function Edit({ course }) {
                                         message={errors.photo}
                                         className="mt-2"
                                     />
-                                </div>
+                                </div> */}
 
                                 {/* select element for user roles */}
                                 <div className="mt-4">

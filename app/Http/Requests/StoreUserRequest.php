@@ -27,6 +27,10 @@ class StoreUserRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'level' => ['nullable','required_if:role,student', 'integer', 'in:100,200,300,400,500,600,700'],
+            'course_of_study_id' => ['nullable','required_if:role,student', 'exists:courses_of_study,id'],
+            'matric_number' => ['nullable','required_if:role,student', 'string', 'max:20', 'unique:users'],
+            'staff_id' => ['nullable','required_if:role,lecturer', 'string', 'max:20', 'unique:users'],
         ];
     }
 }

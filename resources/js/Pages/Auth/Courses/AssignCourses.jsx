@@ -41,7 +41,7 @@ export default function AssignCourses({ lecturer, coursesAssigned }) {
                         <h3 className="text-lg font-semibold mb-4">
                             Assign New Courses
                         </h3>
-                        <CourseSelect routeName="courses.search" lecturerId={lecturer?.id} />
+                        <CourseSelect routeName="courses.search" lecturerId={lecturer?.id} coursesAssigned={coursesAssigned}/>
                     </div>
 
                     {/* Display Assigned Courses */}

@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Semester extends Model
 {
-    protected $fillable = ['name', 'session', 'start_date', 'end_date'];
+    protected $fillable = ['name', 'academic year_id', 'start_date', 'end_date'];
 }

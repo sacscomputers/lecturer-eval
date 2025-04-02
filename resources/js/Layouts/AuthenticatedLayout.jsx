@@ -40,10 +40,24 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
 
                                 <NavLink
+                                    href={route("departments.index")}
+                                    active={route().current("departments.index")}
+                                >
+                                    Departments
+                                </NavLink>
+
+                                <NavLink
                                     href={route("courses.index")}
                                     active={route().current("courses.index")}
                                 >
                                     Courses
+                                </NavLink>
+
+                                <NavLink
+                                    href={route("coursesOfStudy.index")}
+                                    active={route().current("coursesOfStudy.index")}
+                                >
+                                    Courses of Study
                                 </NavLink>
 
                                 <NavLink
@@ -178,6 +192,20 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current("users.index")}
                                 >
                                     Users
+                                </ResponsiveNavLink>
+
+                                <ResponsiveNavLink
+                                    href={route("departments.index")}
+                                    active={route().current("departments.index")}
+                                >
+                                    Departments
+                                </ResponsiveNavLink>
+
+                                <ResponsiveNavLink
+                                    href={route("coursesOfStudy.index")}
+                                    active={route().current("coursesOfStudy.index")}
+                                >
+                                    Courses of Study
                                 </ResponsiveNavLink>
                         <ResponsiveNavLink
                                     href={route("courses.index")}

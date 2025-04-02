@@ -22,7 +22,11 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'photo'
+        'photo',
+        'matric_number',
+        'staff_id',
+        'level',
+        'course_of_study_id',
     ];
 
     /**
@@ -70,6 +74,17 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' || $this->role === 'hod';
+    }
+
+    public function evaluations()
+    {
+        return $this->hasMany(Evaluation::class);
+    }
+
+    // course of study
+    public function courseOfStudy()
+    {
+        return $this->belongsTo(CourseOfStudy::class, 'course_of_study_id');
     }
 }

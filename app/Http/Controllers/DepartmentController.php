@@ -13,7 +13,11 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        //
+        $departments = Department::all();
+
+        return inertia('Auth/Departments/Index', [
+            'departments' => $departments,
+        ]);
     }
 
     /**
@@ -21,7 +25,7 @@ class DepartmentController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('Auth/Departments/Create');
     }
 
     /**
@@ -29,7 +33,11 @@ class DepartmentController extends Controller
      */
     public function store(StoreDepartmentRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        Department::create($validated);
+
+        return redirect()->route('departments.index')->with('success', 'Department created successfully');
     }
 
     /**
@@ -37,7 +45,9 @@ class DepartmentController extends Controller
      */
     public function show(Department $department)
     {
-        //
+        return inertia('Auth/Departments/Show', [
+            'department' => $department,
+        ]);
     }
 
     /**
@@ -45,7 +55,9 @@ class DepartmentController extends Controller
      */
     public function edit(Department $department)
     {
-        //
+        return inertia('Auth/Departments/Edit', [
+            'department' => $department,
+        ]);
     }
 
     /**
@@ -53,7 +65,11 @@ class DepartmentController extends Controller
      */
     public function update(UpdateDepartmentRequest $request, Department $department)
     {
-        //
+        $validated = $request->validated();
+
+        $department->update($validated);
+
+        return redirect()->route('departments.index')->with('success', 'Department updated successfully');
     }
 
     /**
@@ -61,6 +77,8 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        //
+        $department->delete();
+
+        return redirect()->route('departments.index')->with('success', 'Department deleted successfully');
     }
 }

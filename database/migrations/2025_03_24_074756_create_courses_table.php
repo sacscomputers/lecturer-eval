@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('photo');
             $table->longText('description')->nullable();
+            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });
