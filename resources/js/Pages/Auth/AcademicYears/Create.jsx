@@ -15,33 +15,33 @@ export default function Create() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("semesters.store"));
+        post(route("academicYears.store"));
     };
 
     return (
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Semesters / Create
+                    Academic Years / Create
                 </h2>
             }
         >
-            <Head title="Create Semester" />
+            <Head title="Create Academic Year" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        {/* Back to Semesters List */}
+                        {/* Back to Academic Years List */}
                         <div className="flex justify-end mb-4">
                             <Link
-                                href={route("semesters.index")}
+                                href={route("academicYears.index")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
                             >
                                 Back
                             </Link>
                         </div>
 
-                        {/* Semester Creation Form */}
+                        {/* Academic Year Creation Form */}
                         <form onSubmit={submit}>
                             <div>
                                 <InputLabel htmlFor="name" value="Name" />

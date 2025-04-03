@@ -61,10 +61,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
 
                                 <NavLink
-                                    href={route("evaluations.index")}
-                                    active={route().current("evaluations.index")}
+                                    href={route("metrics.index")}
+                                    active={route().current("metrics.index")}
                                 >
-                                    Evaluation
+                                    Metrics
                                 </NavLink>
 
                                 <NavLink
@@ -215,10 +215,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
 
                                 <ResponsiveNavLink
-                                    href={route("evaluations.index")}
-                                    active={route().current("evaluations.index")}
+                                    href={route("metrics.index")}
+                                    active={route().current("metrics.index")}
                                 >
-                                    Evaluation
+                                    Metrics
                                 </ResponsiveNavLink>
 
                                 <ResponsiveNavLink

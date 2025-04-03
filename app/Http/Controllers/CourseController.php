@@ -6,8 +6,11 @@ use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Course;
 use App\Models\Metric;
+use App\Models\Semester;
 use App\Models\Department;
+use App\Models\AcademicYear;
 use Illuminate\Http\Request;
+use App\Models\CourseOfStudy;
 use Dotenv\Store\File\Reader;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
@@ -167,42 +170,62 @@ class CourseController extends Controller
     // show page for assigning courses to users
     public function assign(User $lecturer)
     {
-        // dd($lecturer);
+        
         if (!$lecturer->isLecturer()) {
             return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
+        } else {
+            $coursesAssigned = $lecturer->coursesAsLecturer()->get();
+            $semesters = Semester::all();
+            $academicYears = AcademicYear::all();
+            $courses = Course::all();
+            return Inertia::render('Auth/Courses/AssignCourses', compact('lecturer', 'courses', 'coursesAssigned', 'academicYears', 'semesters'));
         }
-        $coursesAssigned = $lecturer->coursesAsLecturer()->get();
-        $courses = Course::all();
-        return Inertia::render('Auth/Courses/AssignCourses', compact('lecturer', 'courses', 'coursesAssigned'));
+        
     }
 
     // assign Course to User
-
     public function assignCourse(Request $request, User $lecturer)
     {
+        // Ensure the user is a lecturer
         if (!$lecturer->isLecturer()) {
             return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
         }
-
+    
+        // Validate the request
         $request->validate([
-            'course_ids' => 'required|array',
+            'course_ids' => 'required|array|min:1',
             'course_ids.*' => 'exists:courses,id',
+            'semester_id' => 'required|exists:semesters,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
         ]);
-
-        // Get currently assigned course IDs
-        $existingCourses = $lecturer->coursesAsLecturer()->pluck('courses.id')->toArray();
-
+    
+        // Get the currently assigned courses for the lecturer in the specified semester and academic year
+        $existingCourses = $lecturer->coursesAsLecturer()
+            ->wherePivot('semester_id', $request->semester_id)
+            ->wherePivot('academic_year_id', $request->academic_year_id)
+            ->pluck('courses.id')
+            ->toArray();
+    
         // Filter out already assigned courses
         $newCourses = array_diff($request->course_ids, $existingCourses);
-
+    
         if (empty($newCourses)) {
             return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])
                 ->with('info', 'No new courses were assigned.');
         }
-
-        // Assign only new courses without removing existing ones
-        $lecturer->coursesAsLecturer()->attach($newCourses);
-
+    
+        // Prepare data for attaching courses with additional metadata
+        $attachData = [];
+        foreach ($newCourses as $courseId) {
+            $attachData[$courseId] = [
+                'semester_id' => $request->semester_id,
+                'academic_year_id' => $request->academic_year_id,
+            ];
+        }
+    
+        // Assign the new courses to the lecturer
+        $lecturer->coursesAsLecturer()->attach($attachData);
+    
         return Redirect::route('courses.assign', ['lecturer' => $lecturer->id])
             ->with('success', 'Courses assigned successfully.');
     }
@@ -222,32 +245,81 @@ class CourseController extends Controller
     // show page for enrolling students in course
     public function enroll(Course $course)
     {
+        $academicYears = AcademicYear::all();
+        $semesters = Semester::all();
+        $levels = ['100', '200', '300', '400', '500'];
         $students = User::where('role', 'student')->get();
         $studentsEnrolled = $course->students()->get();
-        return Inertia::render('Auth/Courses/EnrollStudents', compact('course', 'students', 'studentsEnrolled'));
+        $coursesOfStudy = CourseOfStudy::all();
+        return Inertia::render('Auth/Courses/EnrollStudents', compact('course', 'students', 'studentsEnrolled', 'levels', 'coursesOfStudy', 'academicYears', 'semesters'));
     }
     // enroll students in course
+    
     public function enrollStudents(Request $request, Course $course)
     {
+        // Validate the request
         $request->validate([
-            'student_ids' => 'required|array',
+            'student_ids' => 'required_without_all:level,course_of_study_id|array|min:1',
             'student_ids.*' => 'exists:users,id',
+            'level' => 'nullable|string|in:100,200,300,400,500',
+            'course_of_study_id' => 'nullable|exists:courses_of_study,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+            'semester_id' => 'required|exists:semesters,id',
         ]);
     
-        // Get currently enrolled student IDs
-        $existingStudents = $course->students()->pluck('users.id')->toArray();
+        $newStudents = [];
     
-        // Filter out already enrolled students
-        $newStudents = array_diff($request->student_ids, $existingStudents);
+        // If student_ids are provided, use them
+        if ($request->filled('student_ids')) {
+            // Get currently enrolled student IDs for the specified academic year and semester
+            $existingStudents = $course->students()
+                ->wherePivot('academic_year_id', $request->academic_year_id)
+                ->wherePivot('semester_id', $request->semester_id)
+                ->pluck('users.id')
+                ->toArray();
+    
+            // Filter out already enrolled students
+            $newStudents = array_diff($request->student_ids, $existingStudents);
+        }
+    
+        // If level and course_of_study_id are provided, filter students
+        if ($request->filled('level') && $request->filled('course_of_study_id')) {
+            $filteredStudents = User::where('role', 'student')
+                ->where('level', $request->level)
+                ->where('course_of_study_id', $request->course_of_study_id)
+                ->pluck('id')
+                ->toArray();
+    
+            // Get currently enrolled student IDs for the specified academic year and semester
+            $existingStudents = $course->students()
+                ->wherePivot('academic_year_id', $request->academic_year_id)
+                ->wherePivot('semester_id', $request->semester_id)
+                ->pluck('users.id')
+                ->toArray();
+    
+            // Filter out already enrolled students
+            $newStudents = array_merge(
+                $newStudents,
+                array_diff($filteredStudents, $existingStudents)
+            );
+        }
     
         if (empty($newStudents)) {
             return back()->with('info', 'No new students were enrolled.');
         }
     
-        // Enroll only new students
-        $course->students()->attach($newStudents);
+        // Enroll only new students with academic year and semester
+        $attachData = [];
+        foreach ($newStudents as $studentId) {
+            $attachData[$studentId] = [
+                'academic_year_id' => $request->academic_year_id,
+                'semester_id' => $request->semester_id,
+            ];
+        }
     
-        return back()->with('success', 'Students enrolled successfully.');
+        $course->students()->attach($attachData);
+    
+        return Redirect::route('courses.show', $course->id)->with('success', 'Students enrolled successfully.');
     }
     
     // unenroll students from course
@@ -291,18 +363,32 @@ class CourseController extends Controller
     }
 
     // evaluate lecturer
+    
     public function evaluateLecturer(Request $request, User $lecturer, Course $course)
     {
         // Check if the user is a student
         if (!$request->user()->isStudent()) {
             return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
         }
-
+    
         // Check if the lecturer is assigned to the course
-        if (!$lecturer->coursesAsLecturer()->where('course_id', $course->id)->exists()) {
+        $lecturerCourse = $lecturer->coursesAsLecturer()
+            ->wherePivot('course_id', $course->id)
+            ->first();
+    
+        if (!$lecturerCourse) {
             return Redirect::route('courses.index')->with('error', 'Lecturer is not assigned to this course.');
         }
-
+    
+        // Retrieve semester_id and academic_year_id from the pivot table
+        $semesterId = $lecturerCourse->pivot->semester_id ?? null;
+        $academicYearId = $lecturerCourse->pivot->academic_year_id ?? null;
+        
+        if (!$semesterId || !$academicYearId) {
+           
+            return Redirect::route('courses.index')->with('error', 'Semester or Academic Year information is missing.');
+        }
+    
         // Validate the request
         $request->validate([
             'scores' => 'required|array',
@@ -315,15 +401,18 @@ class CourseController extends Controller
             if (!Metric::find($metricId)) {
                 return back()->with('error', 'Invalid metric ID.');
             }
+
             $lecturer->evaluations()->create([
                 'course_id' => $course->id,
                 'metric_id' => $metricId,
                 'rating' => $rating,
                 'user_id' => $request->user()->id, // The student who is evaluating
                 'lecturer_id' => $lecturer->id,
+                'semester_id' => $semesterId,
+                'academic_year_id' => $academicYearId,
             ]);
         }
-
+    
         return Redirect::route('courses.show', $course->id)->with('success', 'Lecturer evaluated successfully.');
     }
 }

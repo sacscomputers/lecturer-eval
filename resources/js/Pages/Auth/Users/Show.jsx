@@ -17,7 +17,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default function Show({ user, evaluations, metrics }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { delete: destroy } = useForm();
-
+    console.log(evaluations)
     const openModal = () => {
         setIsModalOpen(true);
     };

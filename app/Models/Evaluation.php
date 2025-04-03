@@ -13,6 +13,8 @@ class Evaluation extends Model
         'metric_id',
         'lecturer_id',
         'rating',
+        'semester_id',
+        'academic_year_id',
         'created_at',
         'updated_at'
     ];
@@ -29,5 +31,10 @@ class Evaluation extends Model
     public function lecturer()
     {
         return $this->belongsTo(User::class, 'lecturer_id');
+    }
+
+    public function metric()
+    {
+        return $this->belongsTo(Metric::class, 'metric_id');
     }
 }

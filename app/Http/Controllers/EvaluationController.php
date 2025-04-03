@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
+use App\Models\Metric;
+use App\Models\Student;
+use App\Models\Lecturer;
+use App\Models\Semester;
 use App\Models\Evaluation;
+use App\Models\AcademicYear;
 use App\Http\Requests\StoreEvaluationRequest;
 use App\Http\Requests\UpdateEvaluationRequest;
 
@@ -13,7 +19,15 @@ class EvaluationController extends Controller
      */
     public function index()
     {
-        //
+        $evaluations = Evaluation::with(['course', 'student', 'lecturer', 'metric'])->get();
+       
+        $semesters = Semester::with('academicYear')->get();
+        $academicYears = AcademicYear::all();
+        $courses = Course::all();
+        $students = Student::all();
+        $lecturers = Lecturer::all();
+        $metrics = Metric::all();
+        return inertia('Auth/Evaluations/Index', compact('evaluations', 'semesters', 'academicYears', 'courses', 'students', 'lecturers', 'metrics'));
     }
 
     /**

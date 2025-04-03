@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Semester;
+use App\Models\AcademicYear;
 use App\Http\Requests\StoreSemesterRequest;
 use App\Http\Requests\UpdateSemesterRequest;
 
@@ -23,7 +24,8 @@ class SemesterController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Auth/Semesters/Create');
+        $academicYears = AcademicYear::all();
+        return Inertia::render('Auth/Semesters/Create', compact('academicYears'));
     }
 
     /**
@@ -49,7 +51,8 @@ class SemesterController extends Controller
      */
     public function edit(Semester $semester)
     {
-        return Inertia::render('Auth/Semesters/Edit', compact('semester'));
+        $academicYears = AcademicYear::all();
+        return Inertia::render('Auth/Semesters/Edit', compact('semester', 'academicYears'));
     }
 
     /**

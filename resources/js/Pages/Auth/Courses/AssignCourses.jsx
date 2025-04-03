@@ -1,28 +1,74 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import CourseSelect from "@/Components/CourseSelect";
+import Select from "react-select";
 import { Head, useForm } from "@inertiajs/react";
 
-export default function AssignCourses({ lecturer, coursesAssigned }) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState(null);
-    const { delete: destroy } = useForm();
+export default function AssignCourses({ lecturer, courses, coursesAssigned, academicYears, semesters }) {
+    const { data, setData, post, delete: destroy, processing } = useForm({
+        course_ids: [],
+        academic_year_id: "",
+        semester_id: "",
+    });
+    const [selectedCourses, setSelectedCourses] = useState([]);
+    const [filteredSemesters, setFilteredSemesters] = useState([]);
 
-    const openModal = (course) => {
-        setSelectedCourse(course);
-        setIsModalOpen(true);
+    // Handle selection change for courses
+    const handleCourseChange = (selectedOptions) => {
+        setSelectedCourses(selectedOptions || []);
+        setData(
+            "course_ids",
+            (selectedOptions || []).map((option) => option.value)
+        );
     };
 
-    const closeModal = () => {
-        setSelectedCourse(null);
-        setIsModalOpen(false);
+    // Handle selection change for academic year
+    const handleAcademicYearChange = (selectedOption) => {
+        setData("academic_year_id", selectedOption ? selectedOption.value : "");
+        // Filter semesters based on the selected academic year
+        const filtered = semesters.filter(
+            (semester) => semester.academic_year_id === selectedOption.value
+        );
+        setFilteredSemesters(filtered);
+        setData("semester_id", ""); // Reset semester selection
     };
 
-    const handleUnassign = () => {
-        destroy(route("lecturer.unassign-course", { lecturer: lecturer.id, course: selectedCourse.id }), {
-            onSuccess: () => closeModal(),
-        });
+    // Handle selection change for semester
+    const handleSemesterChange = (selectedOption) => {
+        setData("semester_id", selectedOption ? selectedOption.value : "");
     };
+
+    // Handle form submission for assigning courses
+    const handleAssign = (e) => {
+        e.preventDefault();
+        if (data.course_ids.length === 0 || !data.academic_year_id || !data.semester_id) {
+            alert("Please select courses, an academic year, and a semester.");
+            return;
+        }
+        post(route("lecturer.assign-courses", lecturer.id));
+    };
+
+    // Handle unassigning a course
+    const handleUnassign = (course) => {
+        destroy(route("lecturer.unassign-course", { lecturer: lecturer.id, course: course.id }));
+    };
+
+    // Map courses to options for react-select
+    const courseOptions = courses.map((course) => ({
+        value: course.id,
+        label: `${course.title} (${course.code})`,
+    }));
+
+    // Map academic years to options for react-select
+    const academicYearOptions = academicYears.map((year) => ({
+        value: year.id,
+        label: year.name,
+    }));
+
+    // Map semesters to options for react-select
+    const semesterOptions = filteredSemesters.map((semester) => ({
+        value: semester.id,
+        label: semester.name,
+    }));
 
     return (
         <AuthenticatedLayout
@@ -41,7 +87,54 @@ export default function AssignCourses({ lecturer, coursesAssigned }) {
                         <h3 className="text-lg font-semibold mb-4">
                             Assign New Courses
                         </h3>
-                        <CourseSelect routeName="courses.search" lecturerId={lecturer?.id} coursesAssigned={coursesAssigned}/>
+                        <form onSubmit={handleAssign}>
+                            {/* Academic Year Selection */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Academic Year
+                                </label>
+                                <Select
+                                    options={academicYearOptions}
+                                    onChange={handleAcademicYearChange}
+                                    className="mt-1"
+                                />
+                            </div>
+
+                            {/* Semester Selection */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Semester
+                                </label>
+                                <Select
+                                    options={semesterOptions}
+                                    onChange={handleSemesterChange}
+                                    className="mt-1"
+                                    isDisabled={!data.academic_year_id}
+                                />
+                            </div>
+
+                            {/* Course Selection */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Courses
+                                </label>
+                                <Select
+                                    options={courseOptions}
+                                    isMulti
+                                    onChange={handleCourseChange}
+                                    value={selectedCourses}
+                                    className="mt-1"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                disabled={processing}
+                            >
+                                Assign Selected Courses
+                            </button>
+                        </form>
                     </div>
 
                     {/* Display Assigned Courses */}
@@ -75,7 +168,7 @@ export default function AssignCourses({ lecturer, coursesAssigned }) {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <button
-                                                    onClick={() => openModal(course)}
+                                                    onClick={() => handleUnassign(course)}
                                                     className="text-red-600 hover:text-red-900"
                                                 >
                                                     Unassign
@@ -93,35 +186,6 @@ export default function AssignCourses({ lecturer, coursesAssigned }) {
                     </div>
                 </div>
             </div>
-
-            {/* Unassign Confirmation Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 className="text-lg font-semibold mb-4">
-                            Confirm Unassign
-                        </h2>
-                        <p>
-                            Are you sure you want to unassign the course{" "}
-                            <strong>{selectedCourse?.title}</strong>?
-                        </p>
-                        <div className="mt-4 flex justify-end">
-                            <button
-                                onClick={closeModal}
-                                className="text-gray-600 hover:text-gray-900 mr-4"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleUnassign}
-                                className="text-red-600 hover:text-red-900"
-                            >
-                                Unassign
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AuthenticatedLayout>
     );
 }

@@ -3,18 +3,47 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
 
-export default function Index({ users }) {
+export default function Index({ users, roles, levels, coursesOfStudy }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const { delete: destroy } = useForm();
-    const { data, setData, post, progress } = useForm({
+    const { data, setData, post } = useForm({
         file: null,
+    });
+
+    const [search, setSearch] = useState("");
+    const [selectedRole, setSelectedRole] = useState("");
+    const [selectedLevel, setSelectedLevel] = useState("");
+    const [selectedCourseOfStudy, setSelectedCourseOfStudy] = useState("");
+    console.log(users);
+    // Filtered users based on search and filters
+    const filteredUsers = users.filter((user) => {
+        const matchesSearch =
+            user.name.toLowerCase().includes(search.toLowerCase()) ||
+            user.email.toLowerCase().includes(search.toLowerCase());
+        const matchesRole = selectedRole ? user.role == selectedRole : true;
+        const matchesLevel = selectedLevel ? user.level == selectedLevel : true;
+        const matchesCourseOfStudy = selectedCourseOfStudy
+            ? user.course_of_study_id == selectedCourseOfStudy
+            : true;
+
+        return matchesSearch && matchesRole && matchesLevel && matchesCourseOfStudy;
     });
 
     const columns = [
         {
             name: "ID",
             selector: (row) => row.id,
+        },
+        {
+            name: "Photo",
+            selector: (row) => (
+                <img
+                    src={"/storage/" + row.photo}
+                    alt={row.name}
+                    className="h-8 w-8 rounded-full"
+                />
+            ),
         },
         {
             name: "Name",
@@ -29,14 +58,12 @@ export default function Index({ users }) {
             selector: (row) => row.role,
         },
         {
-            name: "Photo",
-            selector: (row) => (
-                <img
-                    src={"/storage/" + row.photo}
-                    alt={row.name}
-                    className="h-8 w-8 rounded-full"
-                />
-            ),
+            name: "Level",
+            selector: (row) => row.level || "N/A",
+        },
+        {
+            name: "Course of Study",
+            selector: (row) => row.course_of_study?.name || "N/A",
         },
         {
             name: "Action",
@@ -130,10 +157,66 @@ export default function Index({ users }) {
                             </Link>
                         </div>
 
+                        {/* Search and Filters */}
+                        <div className="flex flex-wrap gap-4 mb-4">
+                            {/* Search */}
+                            <input
+                                type="text"
+                                placeholder="Search by name or email"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/3"
+                            />
+
+                            {/* Filter by Role */}
+                            <select
+                                value={selectedRole}
+                                onChange={(e) => setSelectedRole(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/4"
+                            >
+                                <option value="">All Roles</option>
+                                {roles.map((role) => (
+                                    <option key={role} value={role}>
+                                        {role}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* Filter by Level */}
+                            <select
+                                value={selectedLevel}
+                                onChange={(e) => setSelectedLevel(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/4"
+                            >
+                                <option value="">All Levels</option>
+                                {levels.map((level) => (
+                                    <option key={level} value={level}>
+                                        {level}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* Filter by Course of Study */}
+                            <select
+                                value={selectedCourseOfStudy}
+                                onChange={(e) =>
+                                    setSelectedCourseOfStudy(e.target.value)
+                                }
+                                className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/4"
+                            >
+                                <option value="">All Courses of Study</option>
+                                {coursesOfStudy.map((course) => (
+                                    <option key={course.id} value={course.id}>
+                                        {course.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* Users list */}
                         <DataTable
                             columns={columns}
-                            data={users}
+                            data={filteredUsers}
                             direction="auto"
                             fixedHeaderScrollHeight="300px"
                             pagination

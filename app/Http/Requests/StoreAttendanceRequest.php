@@ -11,7 +11,7 @@ class StoreAttendanceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,13 @@ class StoreAttendanceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'course_id' => 'required|exists:courses,id',
+            'lecturer_id' => 'required|exists:users,id',
+            'semester_id' => 'required|exists:semesters,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+            'status' => 'required|in:Present,Absent',
+            'arrival_time' => 'nullable|date_format:H:i',
+            'departure_time' => 'nullable|date_format:H:i|after:arrival_time',
         ];
     }
 }

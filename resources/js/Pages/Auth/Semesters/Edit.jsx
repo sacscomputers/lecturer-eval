@@ -5,10 +5,10 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, useForm, Link } from "@inertiajs/react";
 
-export default function Edit({ semester }) {
+export default function Edit({ semester, academicYears }) {
     const { data, setData, put, processing, errors } = useForm({
         name: semester.name || "",
-        session: semester.session || "",
+        academic_year_id: semester.academic_year_id || "",
         start_date: semester.start_date || "",
         end_date: semester.end_date || "",
     });
@@ -43,45 +43,64 @@ export default function Edit({ semester }) {
 
                         {/* Semester Edit Form */}
                         <form onSubmit={submit}>
+                            {/* Name Field */}
                             <div>
                                 <InputLabel htmlFor="name" value="Name" />
-                                <TextInput
+                                <select
                                     id="name"
                                     name="name"
                                     value={data.name}
-                                    className="mt-1 block w-full"
-                                    autoComplete="name"
-                                    isFocused={true}
+                                    className="mt-1 block w-full rounded-lg"
                                     onChange={(e) =>
                                         setData("name", e.target.value)
                                     }
                                     required
-                                />
+                                >
+                                    <option value="">Select Semester</option>
+                                    <option value="First">First</option>
+                                    <option value="Second">Second</option>
+                                </select>
                                 <InputError
                                     message={errors.name}
                                     className="mt-2"
                                 />
                             </div>
 
+                            {/* Academic Year Field */}
                             <div className="mt-4">
-                                <InputLabel htmlFor="session" value="Session" />
-                                <TextInput
-                                    id="session"
-                                    name="session"
-                                    value={data.session}
-                                    className="mt-1 block w-full"
-                                    autoComplete="session"
+                                <InputLabel
+                                    htmlFor="academic_year_id"
+                                    value="Academic Year"
+                                />
+                                <select
+                                    id="academic_year_id"
+                                    name="academic_year_id"
+                                    value={data.academic_year_id}
+                                    className="mt-1 block w-full rounded-lg"
                                     onChange={(e) =>
-                                        setData("session", e.target.value)
+                                        setData(
+                                            "academic_year_id",
+                                            e.target.value
+                                        )
                                     }
                                     required
-                                />
+                                >
+                                    <option value="">
+                                        Select an Academic Year
+                                    </option>
+                                    {academicYears.map((year) => (
+                                        <option key={year.id} value={year.id}>
+                                            {year.name}
+                                        </option>
+                                    ))}
+                                </select>
                                 <InputError
-                                    message={errors.session}
+                                    message={errors.academic_year_id}
                                     className="mt-2"
                                 />
                             </div>
 
+                            {/* Start Date Field */}
                             <div className="mt-4">
                                 <InputLabel
                                     htmlFor="start_date"
@@ -104,6 +123,7 @@ export default function Edit({ semester }) {
                                 />
                             </div>
 
+                            {/* End Date Field */}
                             <div className="mt-4">
                                 <InputLabel htmlFor="end_date" value="End Date" />
                                 <TextInput
@@ -123,6 +143,7 @@ export default function Edit({ semester }) {
                                 />
                             </div>
 
+                            {/* Submit Button */}
                             <div className="mt-4 flex items-center justify-end">
                                 <PrimaryButton
                                     className="ms-4"

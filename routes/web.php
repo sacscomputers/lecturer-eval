@@ -44,9 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    // // route to staff.courses
-    // Route::get('lecturer/{lecturer}/courses', [CourseController::class, 'getLecturerCourses'])->name('lecturer.courses');
-    // assign course to lecturer
+
     Route::post('lecturer/{lecturer}/courses', [CourseController::class, 'assignCourse'])->name('lecturer.assign-courses');
     // evaluate lecturer
     Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
@@ -70,6 +68,15 @@ Route::middleware('auth')->group(function () {
     // departments
     Route::resource('departments', DepartmentController::class)->names('departments');
 
+
+    // academic years
+    Route::get('/academic-years', [AcademicYearController::class, 'index'])->name('academicYears.index');
+    Route::get('/academic-years/create', [AcademicYearController::class, 'create'])->name('academicYears.create');
+    Route::post('/academic-years', [AcademicYearController::class, 'store'])->name('academicYears.store');
+    Route::get('/academic-years/{id}', [AcademicYearController::class, 'show'])->name('academicYears.show');
+    Route::get('/academic-years/{id}/edit', [AcademicYearController::class, 'edit'])->name('academicYears.edit');
+    Route::post('/academic-years/{id}', [AcademicYearController::class, 'update'])->name('academicYears.update');
+    Route::delete('/academic-years/{id}', [AcademicYearController::class, 'destroy'])->name('academicYears.destroy');
     // semesters
     Route::resource('semesters', SemesterController::class)->names('semesters');
 

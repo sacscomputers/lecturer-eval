@@ -21,10 +21,6 @@ export default function Index({ semesters }) {
             selector: (row) => row.name,
         },
         {
-            name: "Session",
-            selector: (row) => row.session,
-        },
-        {
             name: "Start Date",
             selector: (row) => row.start_date,
         },

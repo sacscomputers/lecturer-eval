@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Course;
+use App\Models\Semester;
 use App\Models\Attendance;
+use App\Models\AcademicYear;
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Http\Requests\UpdateAttendanceRequest;
 
@@ -13,7 +17,10 @@ class AttendanceController extends Controller
      */
     public function index()
     {
-        //
+        $attendances = Attendance::with(['course', 'lecturer', 'recordedBy'])->get();
+        return inertia('Auth/Attendance/Index', [
+            'attendances' => $attendances,
+        ]);
     }
 
     /**
@@ -21,7 +28,17 @@ class AttendanceController extends Controller
      */
     public function create()
     {
-        //
+        $courses = Course::all();
+        $lecturers = User::where('role', 'lecturer')->get();
+        $semesters = Semester::all();
+        $academicYears = AcademicYear::all();
+
+        return inertia('Auth/Attendance/Create', [
+            'courses' => $courses,
+            'lecturers' => $lecturers,
+            'semesters' => $semesters,
+            'academicYears' => $academicYears,
+        ]);
     }
 
     /**
@@ -29,7 +46,11 @@ class AttendanceController extends Controller
      */
     public function store(StoreAttendanceRequest $request)
     {
-        //
+        $validatedData = $request->validated();
+        $validatedData['recorded_by'] = $request->user()->id;
+        Attendance::create($validatedData);
+        
+        return redirect()->route('attendance.index')->with('success', 'Attendance recorded successfully.');
     }
 
     /**
