@@ -16,7 +16,7 @@ export default function AuthenticatedLayout({ header, children }) {
         <div className="min-h-screen bg-gray-100">
             <nav className="border-b border-gray-100 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
+                    <div className="flex h-16 justify-between items-center">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
@@ -24,55 +24,123 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route("dashboard")}
-                                    active={route().current("dashboard")}
-                                >
-                                    Dashboard
-                                </NavLink>
+                            <div className="hidden sm:ms-10 sm:flex">
+                                <Dropdown>
+                                    <Dropdown.Trigger>
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                        >
+                                            Navigation
+                                            <svg
+                                                className="-me-1 ms-2 h-5 w-5"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </Dropdown.Trigger>
 
-                                <NavLink
-                                    href={route("users.index")}
-                                    active={route().current("users.index")}
-                                >
-                                    Users
-                                </NavLink>
+                                    <Dropdown.Content>
+                                        <Dropdown.Link
+                                            href={route("dashboard")}
+                                            active={route().current(
+                                                "dashboard"
+                                            )}
+                                        >
+                                            Dashboard
+                                        </Dropdown.Link>
+                                        {user.role === "admin" && (
+                                            <>
+                                                <Dropdown.Link
+                                                    href={route("users.index")}
+                                                    active={route().current(
+                                                        "users.index"
+                                                    )}
+                                                >
+                                                    Users
+                                                </Dropdown.Link>
 
-                                <NavLink
-                                    href={route("departments.index")}
-                                    active={route().current("departments.index")}
-                                >
-                                    Departments
-                                </NavLink>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "departments.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "departments.index"
+                                                    )}
+                                                >
+                                                    Departments
+                                                </Dropdown.Link>
 
-                                <NavLink
-                                    href={route("courses.index")}
-                                    active={route().current("courses.index")}
-                                >
-                                    Courses
-                                </NavLink>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "coursesOfStudy.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "coursesOfStudy.index"
+                                                    )}
+                                                >
+                                                    Courses of Study
+                                                </Dropdown.Link>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "metrics.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "metrics.index"
+                                                    )}
+                                                >
+                                                    Metrics
+                                                </Dropdown.Link>
+                                            </>
+                                        )}
 
-                                <NavLink
-                                    href={route("coursesOfStudy.index")}
-                                    active={route().current("coursesOfStudy.index")}
-                                >
-                                    Courses of Study
-                                </NavLink>
+                                        <Dropdown.Link
+                                            href={route("courses.index")}
+                                            active={route().current(
+                                                "courses.index"
+                                            )}
+                                        >
+                                            Courses
+                                        </Dropdown.Link>
 
-                                <NavLink
-                                    href={route("metrics.index")}
-                                    active={route().current("metrics.index")}
-                                >
-                                    Metrics
-                                </NavLink>
+                                        {(user.role == "admin" ||
+                                            (user.role == "hod") |
+                                                (user.role ==
+                                                    "course_rep")) && (
+                                            <>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "schedules.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "schedules.index"
+                                                    )}
+                                                >
+                                                    Schedule
+                                                </Dropdown.Link>
 
-                                <NavLink
-                                    href={route("attendance.index")}
-                                    active={route().current("attendance.index")}
-                                >
-                                    Attendance Tracking
-                                </NavLink>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "attendance.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "attendance.index"
+                                                    )}
+                                                >
+                                                    Attendance Tracking
+                                                </Dropdown.Link>
+                                            </>
+                                        )}
+                                    </Dropdown.Content>
+                                </Dropdown>
                             </div>
                         </div>
 
@@ -181,52 +249,96 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route("dashboard")}
-                            active={route().current("dashboard")}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                                    href={route("users.index")}
-                                    active={route().current("users.index")}
-                                >
-                                    Users
-                                </ResponsiveNavLink>
+                    <ResponsiveNavLink
+                                            href={route("dashboard")}
+                                            active={route().current(
+                                                "dashboard"
+                                            )}
+                                        >
+                                            Dashboard
+                                        </ResponsiveNavLink>
+                                        {user.role === "admin" && (
+                                            <>
+                                                <ResponsiveNavLink
+                                                    href={route("users.index")}
+                                                    active={route().current(
+                                                        "users.index"
+                                                    )}
+                                                >
+                                                    Users
+                                                </ResponsiveNavLink>
 
-                                <ResponsiveNavLink
-                                    href={route("departments.index")}
-                                    active={route().current("departments.index")}
-                                >
-                                    Departments
-                                </ResponsiveNavLink>
+                                                <ResponsiveNavLink
+                                                    href={route(
+                                                        "departments.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "departments.index"
+                                                    )}
+                                                >
+                                                    Departments
+                                                </ResponsiveNavLink>
 
-                                <ResponsiveNavLink
-                                    href={route("coursesOfStudy.index")}
-                                    active={route().current("coursesOfStudy.index")}
-                                >
-                                    Courses of Study
-                                </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                                    href={route("courses.index")}
-                                    active={route().current("courses.index")}
-                                >
-                                    Courses
-                                </ResponsiveNavLink>
+                                                <ResponsiveNavLink
+                                                    href={route(
+                                                        "coursesOfStudy.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "coursesOfStudy.index"
+                                                    )}
+                                                >
+                                                    Courses of Study
+                                                </ResponsiveNavLink>
+                                                <ResponsiveNavLink
+                                                    href={route(
+                                                        "metrics.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "metrics.index"
+                                                    )}
+                                                >
+                                                    Metrics
+                                                </ResponsiveNavLink>
+                                            </>
+                                        )}
 
-                                <ResponsiveNavLink
-                                    href={route("metrics.index")}
-                                    active={route().current("metrics.index")}
-                                >
-                                    Metrics
-                                </ResponsiveNavLink>
+                                        <ResponsiveNavLink
+                                            href={route("courses.index")}
+                                            active={route().current(
+                                                "courses.index"
+                                            )}
+                                        >
+                                            Courses
+                                        </ResponsiveNavLink>
 
-                                <ResponsiveNavLink
-                                    href={route("attendance.index")}
-                                    active={route().current("attendance.index")}
-                                >
-                                    Attendance Tracking
-                                </ResponsiveNavLink>
+                                        {(user.role == "admin" ||
+                                            (user.role == "hod") |
+                                                (user.role ==
+                                                    "course_rep")) && (
+                                            <>
+                                                <ResponsiveNavLink
+                                                    href={route(
+                                                        "schedules.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "schedules.index"
+                                                    )}
+                                                >
+                                                    Schedule
+                                                </ResponsiveNavLink>
+
+                                                <ResponsiveNavLink
+                                                    href={route(
+                                                        "attendance.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "attendance.index"
+                                                    )}
+                                                >
+                                                    Attendance Tracking
+                                                </ResponsiveNavLink>
+                                            </>
+                                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
@@ -267,13 +379,12 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </header>
             )}
-            
-                <main>
-                    {/* <SideBar /> */}
-                    
-                    {children}
-                </main>
-            
+
+            <main>
+                {/* <SideBar /> */}
+
+                {children}
+            </main>
         </div>
     );
 }

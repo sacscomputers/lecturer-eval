@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Attendance extends Model
 {
@@ -23,5 +24,13 @@ class Attendance extends Model
 
     public function recordedBy() {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function academicYear() {
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
+    }
+
+    public function semester() {
+        return $this->belongsTo(Semester::class, 'semester_id');
     }
 }

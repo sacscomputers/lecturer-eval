@@ -94,7 +94,15 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
 
     function submit(e) {
         e.preventDefault();
-        post("/users/bulk-upload");
+        post(route('users.bulk-upload'), {
+            data: data,
+            onSuccess: () => {
+                setData("file", null);
+            },
+            onError: (errors) => {
+                console.error(errors);
+            },
+        });
     }
 
     const openModal = (user) => {

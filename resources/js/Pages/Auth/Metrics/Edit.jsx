@@ -15,7 +15,7 @@ export default function Edit({ metric }) {
 
     const submit = (e) => {
         e.preventDefault();
-        put(route("metrics.update", metric.id));
+        put(route("metrics.update", metric.name));
     };
 
     return (
