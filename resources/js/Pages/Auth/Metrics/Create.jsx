@@ -10,7 +10,7 @@ export default function Create() {
         name: "",
         description: "",
         type: "student",
-        rating: 0,
+        rating: 5,
     });
 
     const submit = (e) => {

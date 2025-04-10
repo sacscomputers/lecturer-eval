@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
 
 export default function Show({ course, department, lecturers, students }) {
+    const user = usePage().props.auth.user;
     const { post: post } = useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({}); // { type: 'lecturer' | 'student', id: null }
@@ -70,18 +71,25 @@ export default function Show({ course, department, lecturers, students }) {
             name: "Action",
             cell: (row) => (
                 <>
-                    <button
-                    onClick={() => openModal("lecturer", row.id)}
-                    className="text-red-600 hover:text-red-900"
-                >
-                    Unassign
-                </button>
-                <Link 
-                className="text-green-600 hover:text-green-900 ml-4"
-                href={route("lecturers.evaluate", { course: course.id, lecturer: row.id })}
-                >
-                    Evaluate
-                </Link>
+                    {user.role == "admin" && (
+                        <button
+                            onClick={() => openModal("lecturer", row.id)}
+                            className="text-red-600 hover:text-red-900"
+                        >
+                            Unassign
+                        </button>
+                    )}
+                    {
+                        (user.role == 'student' || user.role == 'course_rep' || user.role == 'hod') && (<Link
+                            className="text-green-600 hover:text-green-900 ml-4"
+                            href={route("lecturers.evaluate", {
+                                course: course.id,
+                                lecturer: row.id,
+                            })}
+                        >
+                            Evaluate
+                        </Link>)
+                    }
                 </>
             ),
         },
@@ -169,29 +177,34 @@ export default function Show({ course, department, lecturers, students }) {
                             </div>
                         </dl>
                         <div className="mt-6 flex space-x-4 justify-end">
-                            {/* Edit Button */}
-                            <Link
-                                href={route("courses.edit", course.id)}
-                                className="text-blue-600 hover:text-blue-700 px-4 py-2 "
-                            >
-                                Edit
-                            </Link>
-
                             {/* Enroll Button */}
-                            <Link
-                                href={route("courses.enroll", course.id)}
-                                className="text-green hover:text-green-700 px-4 py-2 "
-                            >
-                                Enroll
-                            </Link>
+                            {(user.role == "hod" || user.role == "admin") && (
+                                <Link
+                                    href={route("courses.enroll", course.id)}
+                                    className="text-green hover:text-green-700 px-4 py-2 "
+                                >
+                                    Enroll
+                                </Link>
+                            )}
 
-                            {/* Delete Button */}
-                            <button
-                                onClick={() => openModal("delete", course.id)}
-                                className="text-red-600 hover:text-red-700 px-4 py-2 "
-                            >
-                                Delete
-                            </button>
+                            {user.role == "admin" && (
+                                <>
+                                    <Link
+                                        href={route("courses.edit", course.id)}
+                                        className="text-blue-600 hover:text-blue-700 px-4 py-2 "
+                                    >
+                                        Edit
+                                    </Link>
+                                    <button
+                                        onClick={() =>
+                                            openModal("delete", course.id)
+                                        }
+                                        className="text-red-600 hover:text-red-700 px-4 py-2 "
+                                    >
+                                        Delete
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -254,17 +267,21 @@ export default function Show({ course, department, lecturers, students }) {
                         </div>
 
                         {/* Students */}
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                Students
-                            </h3>
-                            <DataTable
-                                columns={studentColumns}
-                                data={students}
-                                pagination
-                                responsive
-                            />
-                        </div>
+                        {user.role == "admin" && (
+                            <>
+                                <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                        Students
+                                    </h3>
+                                    <DataTable
+                                        columns={studentColumns}
+                                        data={students}
+                                        pagination
+                                        responsive
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

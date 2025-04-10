@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('photo')->nullable()->after('email');
-            $table->enum('role', ['admin', 'student', 'lecturer', 'course_rep', 'hod'])->default('student')->after('photo');
+            $table->string('photo')->nullable();
+            $table->enum('role', ['admin', 'student', 'lecturer', 'course_rep', 'hod'])->default('student');
             $table->string('staff_id')->nullable(); // Only for lecturers
             $table->string('matric_number')->nullable(); // Only for students
             $table->unsignedBigInteger('level')->nullable(); // For students

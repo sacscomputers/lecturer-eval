@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
 
 export default function Index({ users, roles, levels, coursesOfStudy }) {
+    const user = usePage().props.auth.user;
+    const { errors } = usePage().props
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const { delete: destroy } = useForm();
@@ -148,21 +150,24 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                                         setData("file", e.target.files[0])
                                     }
                                 />
+                                
                                 <button
                                     type="submit"
                                     className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition"
                                 >
                                     Bulk Upload
                                 </button>
+                                {errors.file && <p className="text-red-500">{errors.file}</p>}
                             </form>
+                            
 
                             {/* Create User Button */}
-                            <Link
+                            {user.role == 'admin' && (<Link
                                 href={route("users.create")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
                             >
                                 Create User
-                            </Link>
+                            </Link>)}
                         </div>
 
                         {/* Search and Filters */}

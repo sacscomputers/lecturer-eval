@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
 
 export default function Index({ attendances }) {
+    const user = usePage().props.auth.user;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedAttendance, setSelectedAttendance] = useState(null);
     const { delete: destroy } = useForm();
@@ -43,10 +44,6 @@ export default function Index({ attendances }) {
             selector: (row) => row.departure_time || "N/A",
         },
         {
-            name: "Recorded By",
-            selector: (row) => row.recorded_by?.name || "N/A",
-        },
-        {
             name: "Action",
             selector: (row) => (
                 <>
@@ -56,18 +53,21 @@ export default function Index({ attendances }) {
                     >
                         View
                     </Link>
-                    <Link
+                    {(user.role == 'admin' || user.role == 'hod') && (<>
+                        <Link
                         href={route("attendance.edit", row.id)}
                         className="text-yellow-600 hover:text-yellow-900 mr-4"
                     >
                         Edit
                     </Link>
+                    {  }
                     <button
                         onClick={() => openModal(row)}
                         className="text-red-600 hover:text-red-900"
                     >
                         Delete
                     </button>
+                    </>)}
                 </>
             ),
         },

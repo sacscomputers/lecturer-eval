@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\Course;
 use App\Models\Metric;
 use App\Models\Student;
 use App\Models\Lecturer;
+use App\Models\Schedule;
+use App\Models\Semester;
+use App\Models\Attendance;
+use App\Models\Department;
 use App\Models\Evaluation;
+use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use App\Models\CourseOfStudy;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\StoreUserRequest;
 use Illuminate\Support\Facades\Storage;
@@ -50,7 +57,7 @@ class UserController extends Controller
         
         User::create($validatedData);
 
-        return redirect(route('users.index', absolute: false));
+        return redirect(route('users.index', absolute: false))->with('success', 'User created successfully.');
     }
 
     /**
@@ -85,17 +92,16 @@ class UserController extends Controller
         // dd($validatedData);
         $validatedData['photo'] = $request->file('photo') ? $request->file('photo')->store('users', 'public') : $user->photo;
         if ($request->role == 'student' || $request->role == 'course_rep') {
-            $validatedData['role'] = 'student';
+            $validatedData['role'] = $request->role;
             $validatedData['matric_number'] = $request->matric_number;
             $validatedData['level'] = $request->level;
             $validatedData['course_of_study_id'] = $request->course_of_study_id;
         } else if ($request->role == 'lecturer' || $request->role == 'hod') {
-            $validatedData['role'] = 'lecturer';
+            $validatedData['role'] = $request->role;
             $validatedData['staff_id'] = $request->staff_id;
         }
         $user->update($validatedData);
-
-        return redirect(route('users.index', absolute: false));
+        return redirect(route('users.index', absolute: false))->with('success', 'User updated successfully.');
     }
 
     /**
@@ -145,6 +151,7 @@ class UserController extends Controller
             ]);
 
             if ($validator->fails()) {
+                dd($request->all());
                 fclose($handle);
                 return redirect()->back()->withErrors($validator)->withInput();
             }
@@ -192,7 +199,7 @@ class UserController extends Controller
         }
 
         $user->coursesAsLecturer()->attach($request->course_ids);
-        return redirect()->route('users.show', $user->id);
+        return redirect()->route('users.show', $user->id)->with('success', 'Courses assigned successfully.');
     }
 
     // search for students
@@ -209,5 +216,22 @@ class UserController extends Controller
             ->get();
     
         return response()->json($users);
+    }
+
+    public function dashboard (Request $request) 
+    {
+        $summary = [
+            'users' => User::count(),
+            'courses' => Course::count(),
+            'lecturers' => User::where('role', 'lecturer')->count(),
+            'students' => User::where('role', 'student')->count(),
+            'departments' => Department::count(),
+            'schedules' => Schedule::count(),
+            'attendances' => Attendance::count(),
+            'evaluations' => Evaluation::count(),
+        ];
+    
+        return Inertia::render('Dashboard', ['summary' => $summary]);
+
     }
 }

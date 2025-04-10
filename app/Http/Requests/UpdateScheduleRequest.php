@@ -27,8 +27,8 @@ class UpdateScheduleRequest extends FormRequest
             'semester_id' => 'required|exists:semesters,id',
             'academic_year_id' => 'required|exists:academic_years,id',
             'day_of_week' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required|date_format:H:i:s',
+            'end_time' => 'required|date_format:H:i:s|after:start_time',
             'venue' => 'required|string|max:255',
         ];
     }

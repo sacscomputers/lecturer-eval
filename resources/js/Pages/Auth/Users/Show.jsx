@@ -1,30 +1,37 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { Bar } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
     BarElement,
+    LineElement,
+    PointElement,
     Title,
     Tooltip,
     Legend,
 } from "chart.js";
+import { CheckCircle, Star } from "lucide-react";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 export default function Show({ user, evaluations, metrics }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { delete: destroy } = useForm();
-    console.log(evaluations)
-    const openModal = () => {
-        setIsModalOpen(true);
-    };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
 
     const handleDelete = () => {
         destroy(route("users.destroy", user.id), {
@@ -32,30 +39,55 @@ export default function Show({ user, evaluations, metrics }) {
         });
     };
 
-    // Prepare data for the bar chart
-    const chartData = {
-        labels: metrics.map((metric) => metric.name),
+    const metricLabels = metrics.map((metric) => metric.name);
+    const metricAverages = metrics.map((metric) => {
+        const metricEvaluations = evaluations.filter(
+            (evaluation) => evaluation.metric_id === metric.id
+        );
+        const totalRating = metricEvaluations.reduce(
+            (sum, evaluation) => sum + evaluation.rating,
+            0
+        );
+        return metricEvaluations.length
+            ? totalRating / metricEvaluations.length
+            : 0;
+    });
+
+    const barChartData = {
+        labels: metricLabels,
         datasets: [
             {
                 label: "Average Rating",
-                data: metrics.map((metric) => {
-                    const metricEvaluations = evaluations.filter(
-                        (evaluation) => evaluation.metric_id === metric.id
-                    );
-                    const totalRating = metricEvaluations.reduce(
-                        (sum, evaluation) => sum + evaluation.rating,
-                        0
-                    );
-                    return metricEvaluations.length
-                        ? totalRating / metricEvaluations.length
-                        : 0;
-                }),
+                data: metricAverages,
                 backgroundColor: "rgba(75, 192, 192, 0.6)",
                 borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 1,
+                borderRadius: 10,
             },
         ],
     };
+
+    const lineChartData = {
+        labels: metricLabels,
+        datasets: [
+            {
+                label: "Average Rating Trend",
+                data: metricAverages,
+                fill: false,
+                borderColor: "rgba(54, 162, 235, 1)",
+                backgroundColor: "rgba(54, 162, 235, 0.3)",
+                tension: 0.4,
+                pointBackgroundColor: "#fff",
+                pointBorderColor: "#36A2EB",
+                pointRadius: 5,
+            },
+        ],
+    };
+
+    const averageRating = (
+        evaluations.reduce((sum, evalItem) => sum + evalItem.rating, 0) /
+        (evaluations.length || 1)
+    ).toFixed(2);
 
     return (
         <AuthenticatedLayout
@@ -69,8 +101,8 @@ export default function Show({ user, evaluations, metrics }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    {/* Main Card */}
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                     {/* Main Card */}
+                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <div className="flex justify-end mb-4">
                             <Link
                                 href={route("users.index")}
@@ -193,47 +225,53 @@ export default function Show({ user, evaluations, metrics }) {
                         </div>
                     </div>
 
-                    {/* Evaluation Summary and Bar Chart */}
+
+                    {/* Evaluation Summary and Charts */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Evaluation Summary */}
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                            <h3 className="text-lg font-semibold mb-4">
+                        <div className="bg-white p-6 shadow rounded-2xl space-y-4">
+                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <Star className="text-yellow-500" />
                                 Evaluation Summary
                             </h3>
-                            <ul className="list-disc pl-5">
-                                <li>
-                                    Total Evaluations: {evaluations.length}
-                                </li>
-                                <li>
-                                    Average Rating:{" "}
-                                    {(
-                                        evaluations.reduce(
-                                            (sum, evaluation) =>
-                                                sum + evaluation.rating,
-                                            0
-                                        ) / evaluations.length || 0
-                                    ).toFixed(2)}
-                                </li>
-                            </ul>
+                            <div className="text-gray-700 space-y-2">
+                                <p className="flex items-center gap-2 text-base">
+                                    <CheckCircle className="text-green-500" size={20} />
+                                    <span className="font-medium">Total Evaluations:</span>
+                                    <span className="text-lg font-bold">{evaluations.length}</span>
+                                </p>
+                                <p className="flex items-center gap-2 text-base">
+                                    <CheckCircle className="text-blue-500" size={20} />
+                                    <span className="font-medium">Average Rating:</span>
+                                    <span className="text-lg font-bold">{averageRating}</span>
+                                </p>
+                            </div>
                         </div>
 
                         {/* Bar Chart */}
-                        <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <div className="bg-white p-6 shadow rounded-2xl">
                             <h3 className="text-lg font-semibold mb-4">
-                                Performance by Metric
+                                Performance by Metric (Bar)
                             </h3>
-                            <Bar data={chartData} />
+                            <Bar data={barChartData} />
+                        </div>
+
+                        {/* Line Chart */}
+                        <div className="bg-white p-6 shadow rounded-2xl md:col-span-2">
+                            <h3 className="text-lg font-semibold mb-4">
+                                Performance Trend (Line)
+                            </h3>
+                            <Line data={lineChartData} />
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* Delete Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 className="text-lg font-semibold mb-4">
-                            Confirm Delete
-                        </h2>
+                        <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
                         <p>Are you sure you want to delete this user?</p>
                         <div className="mt-4 flex justify-end">
                             <button

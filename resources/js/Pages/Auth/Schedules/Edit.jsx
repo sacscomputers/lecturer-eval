@@ -3,7 +3,7 @@ import { useForm, Head, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 export default function Edit({ schedule, courses, lecturers, semesters, academicYears }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         course_id: schedule.course_id || "",
         lecturer_id: schedule.lecturer_id || "",
         semester_id: schedule.semester_id || "",
@@ -16,7 +16,7 @@ export default function Edit({ schedule, courses, lecturers, semesters, academic
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route("schedules.update", schedule.id));
+        post(route("schedules.update", schedule.id));
     };
 
     return (

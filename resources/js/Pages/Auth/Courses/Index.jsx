@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
 
 export default function Index({ courses }) {
+    const user = usePage().props.auth.user;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const { delete: destroy } = useForm();
+    console.log(courses)
 
     const columns = [
         {
@@ -22,12 +24,8 @@ export default function Index({ courses }) {
             selector: (row) => row.code,
         },
         {
-            name: "Description",
-            selector: (row) => row.description || "N/A",
-        },
-        {
             name: "Department",
-            selector: (row) => row.department?.name || "N/A",
+            selector: (row) => row.department.name || "N/A",
         },
         {
             name: "Photo",
@@ -36,7 +34,7 @@ export default function Index({ courses }) {
                     <img
                         src={`/storage/${row.photo}`}
                         alt={row.title}
-                        className="h-12 w-12 rounded-full object-cover"
+                        className="h-12 w-12 object-cover"
                     />
                 ) : (
                     "N/A"
@@ -52,6 +50,8 @@ export default function Index({ courses }) {
                     >
                         View
                     </Link>
+                   { user.role == 'admin' && ( 
+                    <>
                     <Link
                         href={route("courses.edit", row.id)}
                         className="text-yellow-600 hover:text-yellow-900 mr-4"
@@ -64,6 +64,8 @@ export default function Index({ courses }) {
                     >
                         Delete
                     </button>
+                </>
+                )}
                 </>
             ),
         },
@@ -99,14 +101,14 @@ export default function Index({ courses }) {
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         {/* Create Course Button */}
-                        <div className="flex justify-between items-center mb-4">
+                        { user.role == 'admin' && (<div className="flex justify-between items-center mb-4">
                             <Link
                                 href={route("courses.create")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
                             >
                                 Create Course
                             </Link>
-                        </div>
+                        </div>)}
 
                         {/* Courses List */}
                         <DataTable

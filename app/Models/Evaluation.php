@@ -9,7 +9,7 @@ class Evaluation extends Model
 
     protected $fillable = [
         'course_id',
-        'student_id',
+        'user_id',
         'metric_id',
         'lecturer_id',
         'rating',
@@ -26,7 +26,7 @@ class Evaluation extends Model
 
     public function student()
     {
-        return $this->belongsTo(User::class, 'student_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function lecturer()
     {

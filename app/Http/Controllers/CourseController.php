@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Course;
 use App\Models\Metric;
 use App\Models\Semester;
 use App\Models\Department;
+use App\Models\Evaluation;
 use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use App\Models\CourseOfStudy;
@@ -34,14 +36,14 @@ class CourseController extends Controller
         // check if user is a lecturer
         if ($request->user()->isLecturer()) {
            
-            $courses = $request->user()->coursesAsLecturer()->get();
+            $courses = $request->user()->coursesAsLecturer()->with('department')->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
         }
 
         // check if user is a student
         if ($request->user()->isStudent()) {
             
-            $courses = $request->user()->coursesAsStudent()->get();
+            $courses = $request->user()->coursesAsStudent()->with('department')->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
         }
 
@@ -78,7 +80,7 @@ class CourseController extends Controller
         $lecturers = $course->lecturers()->get();
         $students = $course->students()->get();
         $user = $request->user();
-        $department = $course->department;
+        $department = $course->department();
     
         return Inertia::render('Auth/Courses/Show', compact('course', 'user', 'lecturers', 'students', 'department'));
     }
@@ -248,7 +250,7 @@ class CourseController extends Controller
         $academicYears = AcademicYear::all();
         $semesters = Semester::all();
         $levels = ['100', '200', '300', '400', '500'];
-        $students = User::where('role', 'student')->get();
+        $students = User::where('role', 'student')->orWhere('role', 'course_rep')->get();
         $studentsEnrolled = $course->students()->get();
         $coursesOfStudy = CourseOfStudy::all();
         return Inertia::render('Auth/Courses/EnrollStudents', compact('course', 'students', 'studentsEnrolled', 'levels', 'coursesOfStudy', 'academicYears', 'semesters'));
@@ -355,12 +357,49 @@ class CourseController extends Controller
     }
 
     // show evaluation form for lecturer
-    public function evaluateLecturerForm(User $lecturer, Course $course)
-    {
-        $metrics = Metric::all();
-        // $courses = $lecturer->coursesAsLecturer()->get();
-        return Inertia::render('Auth/Users/Evaluate', compact('lecturer', 'course', 'metrics'));
+ 
+public function evaluateLecturerForm(Request $request, User $lecturer, Course $course)
+{
+    $metrics = Metric::all();
+
+    // Check if the user is a student
+    if (!$request->user()->isStudent()) {
+        return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
     }
+
+    // Check if the lecturer is assigned to the course
+    $lecturerCourse = $lecturer->coursesAsLecturer()
+        ->wherePivot('course_id', $course->id)
+        ->first();
+
+    if (!$lecturerCourse) {
+        return Redirect::route('courses.index')->with('error', 'Lecturer is not assigned to this course.');
+    }
+
+    // Retrieve semester_id and academic_year_id from the pivot table
+    $semesterId = $lecturerCourse->pivot->semester_id ?? null;
+    $academicYearId = $lecturerCourse->pivot->academic_year_id ?? null;
+
+    if (!$semesterId || !$academicYearId) {
+        return Redirect::route('courses.index')->with('error', 'Semester or Academic Year information is missing.');
+    }
+
+    // Check if the user has already evaluated this lecturer for the same course and semester
+    $existingEvaluation = Evaluation::where('course_id', $course->id)
+    ->where('user_id', $request->user()->id)
+    ->where('lecturer_id', $lecturer->id)
+    ->where('semester_id', $semesterId)
+    ->where('academic_year_id', $academicYearId)
+    ->exists();
+    
+    if ($existingEvaluation) {
+        // dd('I already evaluated this lecturer');
+        return Redirect::route('courses.show', $course->id)
+            ->with('info', 'You have already evaluated this lecturer for this course and semester.');
+    }
+
+    return Inertia::render('Auth/Users/Evaluate', compact('lecturer', 'course', 'metrics'));
+}
 
     // evaluate lecturer
     
@@ -401,12 +440,12 @@ class CourseController extends Controller
             if (!Metric::find($metricId)) {
                 return back()->with('error', 'Invalid metric ID.');
             }
-
-            $lecturer->evaluations()->create([
+            
+            Evaluation::create([
                 'course_id' => $course->id,
                 'metric_id' => $metricId,
                 'rating' => $rating,
-                'user_id' => $request->user()->id, // The student who is evaluating
+                'user_id' => $request->user()->id, 
                 'lecturer_id' => $lecturer->id,
                 'semester_id' => $semesterId,
                 'academic_year_id' => $academicYearId,

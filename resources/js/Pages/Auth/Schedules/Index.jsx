@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
-import { Link, Head } from "@inertiajs/react";
+import { Link, Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 export default function Index({
@@ -15,6 +15,7 @@ export default function Index({
     venues,
     academicYears,
 }) {
+    const user = usePage().props.auth.user;
     const [filteredSchedules, setFilteredSchedules] = useState(schedules);
 
     const [selectedCourse, setSelectedCourse] = useState("");
@@ -127,15 +128,15 @@ const events = filteredSchedules.flatMap((schedule) => {
             <Head title="Schedules" />
             <div className="p-6 bg-gray-100 min-h-screen">
                 {/* Create Schedule Button */}
-                <div className="mb-6">
+                { user.role == 'admin' && (<div className="mb-6">
                     <Link
                         href={route("schedules.create")}
                         className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
                     >
                         Create Schedule
                     </Link>
-                </div>
-
+                </div>)
+}
                 {/* Filters */}
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
                     <select

@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import UpdatePhotoForm from './Partials/UpdatePhotoForm';
 
 export default function Edit({ mustVerifyEmail, status }) {
     return (
@@ -16,6 +17,11 @@ export default function Edit({ mustVerifyEmail, status }) {
             <Head title="Profile" />
 
             <div className="py-12">
+                <div className="mb-5 mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 w-50">
+                        <UpdatePhotoForm />
+                    </div>
+                </div>
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <UpdateProfileInformationForm

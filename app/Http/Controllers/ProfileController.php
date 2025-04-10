@@ -60,4 +60,21 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * update user photo
+     */
+    
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+        $path = $request->file('photo')->store('users', 'public');
+        $user->update(['photo' => $path]);
+
+        return Redirect::route('profile.edit')->with('success', 'Photo updated successfully.');
+    }
 }

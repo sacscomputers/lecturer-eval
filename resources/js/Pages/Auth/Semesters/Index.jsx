@@ -92,7 +92,7 @@ export default function Index({ semesters }) {
                         {/* Bulk Upload and Create Semester */}
                         <div className="flex justify-between items-center mb-4">
                             {/* Bulk Upload Semesters */}
-                            <form
+                            {/* <form
                                 onSubmit={submit}
                                 className="flex items-center gap-2"
                             >
@@ -109,7 +109,7 @@ export default function Index({ semesters }) {
                                 >
                                     Bulk Upload
                                 </button>
-                            </form>
+                            </form> */}
 
                             {/* Create Semester Button */}
                             <Link

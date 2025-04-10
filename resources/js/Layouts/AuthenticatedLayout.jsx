@@ -1,14 +1,14 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
-import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import SideBar from "@/Components/SideBar";
+import Alert from "@/Components/Alert";
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-    console.log(user);
+    const { success, error, info } = usePage().props.flash || {};
+    console.log(usePage().props);
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -31,7 +31,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             type="button"
                                             className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                         >
-                                            Navigation
+                                            Menu
                                             <svg
                                                 className="-me-1 ms-2 h-5 w-5"
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -99,6 +99,37 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 >
                                                     Metrics
                                                 </Dropdown.Link>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "academicYears.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "academicYears.index"
+                                                    )}
+                                                >
+                                                    Academic Year
+                                                </Dropdown.Link>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "semesters.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "semesters.index"
+                                                    )}
+                                                >
+                                                    Semesters
+                                                </Dropdown.Link>
+                                                <Dropdown.Link
+                                                    href={route(
+                                                        "evaluations.index"
+                                                    )}
+                                                    active={route().current(
+                                                        "evaluations.index"
+                                                    )}
+                                                >
+                                                    Evaluations
+                                                </Dropdown.Link>
+
                                             </>
                                         )}
 
@@ -112,9 +143,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Link>
 
                                         {(user.role == "admin" ||
-                                            (user.role == "hod") |
-                                                (user.role ==
-                                                    "course_rep")) && (
+                                            user.role == "hod" ||
+                                            user.role == "course_rep") && (
                                             <>
                                                 <Dropdown.Link
                                                     href={route(
@@ -249,96 +279,80 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                    <ResponsiveNavLink
-                                            href={route("dashboard")}
-                                            active={route().current(
-                                                "dashboard"
-                                            )}
-                                        >
-                                            Dashboard
-                                        </ResponsiveNavLink>
-                                        {user.role === "admin" && (
-                                            <>
-                                                <ResponsiveNavLink
-                                                    href={route("users.index")}
-                                                    active={route().current(
-                                                        "users.index"
-                                                    )}
-                                                >
-                                                    Users
-                                                </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route("dashboard")}
+                            active={route().current("dashboard")}
+                        >
+                            Dashboard
+                        </ResponsiveNavLink>
+                        {user.role === "admin" && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route("users.index")}
+                                    active={route().current("users.index")}
+                                >
+                                    Users
+                                </ResponsiveNavLink>
 
-                                                <ResponsiveNavLink
-                                                    href={route(
-                                                        "departments.index"
-                                                    )}
-                                                    active={route().current(
-                                                        "departments.index"
-                                                    )}
-                                                >
-                                                    Departments
-                                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route("departments.index")}
+                                    active={route().current(
+                                        "departments.index"
+                                    )}
+                                >
+                                    Departments
+                                </ResponsiveNavLink>
 
-                                                <ResponsiveNavLink
-                                                    href={route(
-                                                        "coursesOfStudy.index"
-                                                    )}
-                                                    active={route().current(
-                                                        "coursesOfStudy.index"
-                                                    )}
-                                                >
-                                                    Courses of Study
-                                                </ResponsiveNavLink>
-                                                <ResponsiveNavLink
-                                                    href={route(
-                                                        "metrics.index"
-                                                    )}
-                                                    active={route().current(
-                                                        "metrics.index"
-                                                    )}
-                                                >
-                                                    Metrics
-                                                </ResponsiveNavLink>
-                                            </>
-                                        )}
+                                <ResponsiveNavLink
+                                    href={route("coursesOfStudy.index")}
+                                    active={route().current(
+                                        "coursesOfStudy.index"
+                                    )}
+                                >
+                                    Courses of Study
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route("metrics.index")}
+                                    active={route().current("metrics.index")}
+                                >
+                                    Metrics
+                                </ResponsiveNavLink>
+                            </>
+                        )}
 
-                                        <ResponsiveNavLink
-                                            href={route("courses.index")}
-                                            active={route().current(
-                                                "courses.index"
-                                            )}
-                                        >
-                                            Courses
-                                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route("courses.index")}
+                            active={route().current("courses.index")}
+                        >
+                            Courses
+                        </ResponsiveNavLink>
 
-                                        {(user.role == "admin" ||
-                                            (user.role == "hod") |
-                                                (user.role ==
-                                                    "course_rep")) && (
-                                            <>
-                                                <ResponsiveNavLink
-                                                    href={route(
-                                                        "schedules.index"
-                                                    )}
-                                                    active={route().current(
-                                                        "schedules.index"
-                                                    )}
-                                                >
-                                                    Schedule
-                                                </ResponsiveNavLink>
+                        {(user.role == "admin" ||
+                            (user.role == "hod") |
+                                (user.role == "course_rep")) && (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route("schedules.index")}
+                                    active={route().current("schedules.index")}
+                                >
+                                    Schedule
+                                </ResponsiveNavLink>
 
-                                                <ResponsiveNavLink
-                                                    href={route(
-                                                        "attendance.index"
-                                                    )}
-                                                    active={route().current(
-                                                        "attendance.index"
-                                                    )}
-                                                >
-                                                    Attendance Tracking
-                                                </ResponsiveNavLink>
-                                            </>
-                                        )}
+                                <ResponsiveNavLink
+                                    href={route("attendance.index")}
+                                    active={route().current("attendance.index")}
+                                >
+                                    Attendance Tracking
+                                </ResponsiveNavLink>
+
+                                <ResponsiveNavLink
+                                    href={route("evaluations.index")}
+                                    active={route().current("evaluations.index")}
+                                >
+                                    Evaluations
+                                </ResponsiveNavLink>
+                            </>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
@@ -376,15 +390,16 @@ export default function AuthenticatedLayout({ header, children }) {
                 <header className="bg-white shadow">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         {header}
+                        {/* Display Alerts */}
+                        {success && <Alert type="success" message={success} />}
+                        {error && <Alert type="error" message={error} />}
+                        {info && <Alert type="info" message={info} />}
+                        {/* <SideBar /> */}
                     </div>
                 </header>
             )}
 
-            <main>
-                {/* <SideBar /> */}
-
-                {children}
-            </main>
+            <main>{children}</main>
         </div>
     );
 }
