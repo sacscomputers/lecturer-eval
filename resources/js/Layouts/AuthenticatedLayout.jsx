@@ -57,7 +57,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         >
                                             Dashboard
                                         </Dropdown.Link>
-                                        {user.role === "admin" && (
+                                        {(user.role === "admin" || user.role === 'hod') && (
                                             <>
                                                 <Dropdown.Link
                                                     href={route("users.index")}

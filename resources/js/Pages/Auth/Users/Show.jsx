@@ -13,6 +13,7 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
+
 import { CheckCircle, Star } from "lucide-react";
 
 ChartJS.register(

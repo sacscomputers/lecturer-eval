@@ -76,6 +76,14 @@ class User extends Authenticatable
     {
         return $this->role === 'admin' || $this->role === 'hod';
     }
+    public function isHod()
+    {
+        return $this->role === 'hod';
+    }
+    public function isCourseRep()
+    {
+        return $this->role === 'course_rep';
+    }
 
     public function evaluations()
     {

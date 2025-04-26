@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('course/{course}', [CourseController::class, 'show'])->name('courses.show');
 });
 
-Route::middleware(['auth', 'role:student'])->group(function () {
+Route::middleware(['auth', 'role:student,course_rep,'])->group(function () {
    // evaluate lecturer
     Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
     Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
@@ -45,7 +45,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 
 // course_rep and hod
 Route::middleware(['auth', 'role:course_rep,admin,hod'])->group(function () {
-    Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
+    // Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
     Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
 
     Route::resource('/attendance', AttendanceController::class)->names('attendance');
@@ -53,7 +53,7 @@ Route::middleware(['auth', 'role:course_rep,admin,hod'])->group(function () {
     
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin,hod'])->group(function () {
    
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 

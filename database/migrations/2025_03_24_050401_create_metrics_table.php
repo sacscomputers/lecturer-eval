@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('description')->nullable();
-            $table->enum('type', ['hod', 'student'])->default('student');
+            $table->enum('type', ['hod', 'student']);
             $table->float('rating', 2)->default(0);
             $table->timestamps();
         });

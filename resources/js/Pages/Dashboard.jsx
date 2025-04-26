@@ -1,7 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 
 export default function Dashboard({ summary }) {
+    const user = usePage().props.auth.user;
     const resources = [
         {
             title: "Users",
@@ -76,38 +77,44 @@ export default function Dashboard({ summary }) {
                         <div className="p-6 text-gray-900">
                             You're logged in!
                         </div>
-                        <div className="py-12" style={{
-                    backgroundImage: "url('/images/bg-pattern.jpg')",
-                    backgroundAttachment: "fixed",
-                    backgroundSize: "cover",    
-                }}>
-                            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-                                    {resources.map((resource, index) => (
-                                        <div
-                                            key={index}
-                                            className={`${resource.color} text-white p-6 rounded-lg shadow-lg flex flex-col items-center bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-50 border border-gray-100`}
-                                        >
-                                            <div className="text-4xl">
-                                                {resource.icon}
-                                            </div>
-                                            <div className="text-2xl font-bold mt-4">
-                                                {resource.count}
-                                            </div>
-                                            <div className="text-lg mt-2">
-                                                {resource.title}
-                                            </div>
-                                            <Link
-                                                href={resource.link}
-                                                className="mt-4 bg-white text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200"
+                        {user.role == "admin" && (
+                            <div
+                                className="py-12"
+                                style={{
+                                    backgroundImage:
+                                        "url('/images/bg-pattern.jpg')",
+                                    backgroundAttachment: "fixed",
+                                    backgroundSize: "cover",
+                                }}
+                            >
+                                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+                                        {resources.map((resource, index) => (
+                                            <div
+                                                key={index}
+                                                className={`${resource.color} text-white p-6 rounded-lg shadow-lg flex flex-col items-center bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-50 border border-gray-100`}
                                             >
-                                                View {resource.title}
-                                            </Link>
-                                        </div>
-                                    ))}
+                                                <div className="text-4xl">
+                                                    {resource.icon}
+                                                </div>
+                                                <div className="text-2xl font-bold mt-4">
+                                                    {resource.count}
+                                                </div>
+                                                <div className="text-lg mt-2">
+                                                    {resource.title}
+                                                </div>
+                                                <Link
+                                                    href={resource.link}
+                                                    className="mt-4 bg-white text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200"
+                                                >
+                                                    View {resource.title}
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

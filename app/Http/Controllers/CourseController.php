@@ -360,10 +360,16 @@ class CourseController extends Controller
  
 public function evaluateLecturerForm(Request $request, User $lecturer, Course $course)
 {
-    $metrics = Metric::all();
+    $metrics = [];
+    if ($request->user()->role == 'hod') {
+        $metrics = Metric::where('type', 'hod')->get();
+    } else {
+        $metrics = Metric::where('type', 'student')->get();
+    }
+    
 
     // Check if the user is a student
-    if (!$request->user()->isStudent()) {
+    if (!$request->user()->isStudent() && !$request->user()->role == 'hod') {
         return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
     }
 
@@ -406,7 +412,7 @@ public function evaluateLecturerForm(Request $request, User $lecturer, Course $c
     public function evaluateLecturer(Request $request, User $lecturer, Course $course)
     {
         // Check if the user is a student
-        if (!$request->user()->isStudent()) {
+        if (!$request->user()->isStudent() && !$request->user()->isHod()) {
             return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
         }
     
