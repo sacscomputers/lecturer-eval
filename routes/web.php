@@ -36,25 +36,17 @@ Route::middleware('auth')->group(function () {
     Route::get('course/{course}', [CourseController::class, 'show'])->name('courses.show');
 });
 
-Route::middleware(['auth', 'role:student,course_rep,'])->group(function () {
-   // evaluate lecturer
-    Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
-    Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
-});
-
-
 // course_rep and hod
 Route::middleware(['auth', 'role:course_rep,admin,hod'])->group(function () {
     // Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
-    Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
+    // Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
 
     Route::resource('/attendance', AttendanceController::class)->names('attendance');
     Route::get('/schedules', [ScheduleController::class, 'index'])->name('schedules.index');
-    
 });
 
 Route::middleware(['auth', 'role:admin,hod'])->group(function () {
-   
+
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // users
@@ -71,9 +63,9 @@ Route::middleware(['auth', 'role:admin,hod'])->group(function () {
 
 
     Route::post('lecturer/{lecturer}/courses', [CourseController::class, 'assignCourse'])->name('lecturer.assign-courses');
-    
+
     Route::delete('lecturer/{lecturer}/courses/{course}', [CourseController::class, 'unassignCourse'])->name('lecturer.unassign-course');
-    
+
     // courses
     Route::get('lecturer/{lecturer}/courses', [CourseController::class, 'assign'])->name('courses.assign');
     Route::get('courses/{course}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
@@ -85,7 +77,7 @@ Route::middleware(['auth', 'role:admin,hod'])->group(function () {
     Route::get('/courses/search', [CourseController::class, 'search'])->name('courses.search');
     Route::post('courses/{course}', [CourseController::class, 'update'])->name('courses.update');
     Route::post('/courses/bulk-upload', [CourseController::class, 'bulkUpload'])->name('courses.bulk-upload');
-   
+
 
     // departments
     Route::resource('departments', DepartmentController::class)->names('departments');
@@ -124,8 +116,14 @@ Route::middleware(['auth', 'role:admin,hod'])->group(function () {
     Route::get('/schedules/{schedule}/edit', [ScheduleController::class, 'edit'])->name('schedules.edit');
     Route::post('/schedules/{schedule}', [ScheduleController::class, 'update'])->name('schedules.update');
     Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
-    
+});
+
+Route::middleware(['auth', 'role:student,course_rep,hod'])->group(function () {
+    // evaluate lecturer
+    Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
+    Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
 });
 
 
-require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';

@@ -151,8 +151,8 @@ class UserController extends Controller
             ]);
 
             if ($validator->fails()) {
-                dd($request->all());
                 fclose($handle);
+                dd($validator->errors()->toArray());
                 return redirect()->back()->withErrors($validator)->withInput();
             }
 

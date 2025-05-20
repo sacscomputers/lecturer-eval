@@ -228,7 +228,8 @@ export default function Show({ user, evaluations, metrics }) {
 
 
                     {/* Evaluation Summary and Charts */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    { (user.role == 'lecturer') && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Evaluation Summary */}
                         <div className="bg-white p-6 shadow rounded-2xl space-y-4">
                             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -265,6 +266,7 @@ export default function Show({ user, evaluations, metrics }) {
                             <Line data={lineChartData} />
                         </div>
                     </div>
+                    )}
                 </div>
             </div>
 

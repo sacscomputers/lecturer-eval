@@ -25,13 +25,13 @@ export default function Dashboard({ summary }) {
         //     color: "bg-yellow-500",
         //     icon: "🎓",
         // },
-        // {
-        //     title: "Students",
-        //     count: summary.students,
-        //     link: route("users.index"),
-        //     color: "bg-red-500",
-        //     icon: "🎒",
-        // },
+        {
+            title: "Metrics",
+            count: summary.metrics,
+            link: route("metrics.index"),
+            color: "bg-red-500",
+            icon: "🎒",
+        },
         {
             title: "Departments",
             count: summary.departments,

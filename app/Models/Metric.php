@@ -21,12 +21,12 @@ class Metric extends Model
     {
         return 'name';
     }
-    public function getTypeAttribute($value)
-    {
-        return $value === 'hod' ? 'HOD' : 'Student';
-    }
-    public function setTypeAttribute($value)
-    {
-        $this->attributes['type'] = $value === 'HOD' ? 'hod' : 'student';
-    }
+    // public function getTypeAttribute($value)
+    // {
+    //     return $value === 'hod' ? 'HOD' : 'Student';
+    // }
+    // public function setTypeAttribute($value)
+    // {
+    //     $this->attributes['type'] = $value === 'HOD' ? 'hod' : 'student';
+    // }
 }
