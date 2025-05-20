@@ -18,7 +18,12 @@ export default function Index({ semesters }) {
         },
         {
             name: "Name",
-            selector: (row) => row.name,
+            selector: (row) => <Link
+            href={route("semesters.show", row.id)}
+            className="underline"
+        >
+            {row.name}
+        </Link>,
         },
         {
             name: "Start Date",

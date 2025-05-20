@@ -17,7 +17,12 @@ export default function Index({ courses }) {
         },
         {
             name: "Title",
-            selector: (row) => row.title,
+            selector: (row) =>  <Link
+            href={route("courses.show", row.id)}
+            className="underline"
+        >
+            {row.title}
+        </Link>,
         },
         {
             name: "Code",
@@ -25,7 +30,7 @@ export default function Index({ courses }) {
         },
         {
             name: "Department",
-            selector: (row) => row.department.name || "N/A",
+            selector: (row) => <><Link href={route('departments.show', row.department.id)} className="hover:underline">{row.department.name}</Link></> || "N/A",
         },
         {
             name: "Photo",
@@ -50,7 +55,7 @@ export default function Index({ courses }) {
                     >
                         View
                     </Link>
-                   { user.role == 'admin' && ( 
+                   { user.role_names.includes('admin') && ( 
                     <>
                     <Link
                         href={route("courses.edit", row.id)}
@@ -101,7 +106,7 @@ export default function Index({ courses }) {
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         {/* Create Course Button */}
-                        { user.role == 'admin' && (<div className="flex justify-between items-center mb-4">
+                        { user.role_names.includes('admin') && (<div className="flex justify-between items-center mb-4">
                             <Link
                                 href={route("courses.create")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"

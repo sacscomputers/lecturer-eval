@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
-import { Link, Head, usePage } from "@inertiajs/react";
+import { Link, Head, usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 export default function Index({
@@ -128,10 +128,10 @@ const events = filteredSchedules.flatMap((schedule) => {
             <Head title="Schedules" />
             <div className="p-6 bg-gray-100 min-h-screen">
                 {/* Create Schedule Button */}
-                { user.role == 'admin' && (<div className="mb-6">
+                { (user.role_names.includes('admin') || user.role_names.includes('course rep') || user.role_names.includes('hod')) && (<div className="mb-6">
                     <Link
                         href={route("schedules.create")}
-                        className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                        className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
                     >
                         Create Schedule
                     </Link>
@@ -241,8 +241,8 @@ const events = filteredSchedules.flatMap((schedule) => {
                         height="auto"
                         eventClick={(info) => {
                             console.log(info.event.extendedProps.id);
-                            // Handle event click (e.g., navigate to schedule details)
-                            window.location.href = `/schedules/${info.event.extendedProps.id}`;
+                            
+                            router.visit(`/schedules/${info.event.extendedProps.id}`);
                         }} 
                     />
                 </div>

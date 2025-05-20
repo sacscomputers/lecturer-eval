@@ -3,13 +3,14 @@ import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
+import Select from "react-select";
 import { Head, useForm, Link } from "@inertiajs/react";
 
 export default function Edit({ user, coursesOfStudy }) {
     const { data, setData, post, processing, errors, progress } = useForm({
         name: user.name || "",
         email: user.email || "",
-        role: user.role || "",
+        roles: user.role_names || [],
         photo: null,
         matric_number: user.matric_number || "",
         level: user.level || "",
@@ -92,27 +93,39 @@ export default function Edit({ user, coursesOfStudy }) {
 
                             {/* Role Selection */}
                             <div className="mt-4">
-                                <InputLabel htmlFor="role" value="Role" />
-                                <select
-                                    id="role"
-                                    name="role"
-                                    value={data.role}
-                                    onChange={(e) =>
-                                        setData("role", e.target.value)
+                                <InputLabel htmlFor="roles" value="Roles" />
+                                <Select
+                                    id="roles"
+                                    isMulti // Allows multiple selections
+                                    options={[
+                                        { value: "admin", label: "Admin" },
+                                        { value: "student", label: "Student" },
+                                        {
+                                            value: "lecturer",
+                                            label: "Lecturer",
+                                        },
+                                        {
+                                            value: "course rep",
+                                            label: "Course Rep",
+                                        },
+                                        { value: "hod", label: "HOD" },
+                                    ]}
+                                    value={data.roles.map((role) => ({
+                                        value: role,
+                                        label: role,
+                                    }))}
+                                    onChange={(selectedOptions) =>
+                                        setData(
+                                            "roles",
+                                            selectedOptions.map(
+                                                (option) => option.value
+                                            )
+                                        )
                                     }
-                                    className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                    required
-                                >
-                                    <option value="admin">Admin</option>
-                                    <option value="student">Student</option>
-                                    <option value="lecturer">Lecturer</option>
-                                    <option value="course_rep">
-                                        Course Rep
-                                    </option>
-                                    <option value="hod">HOD</option>
-                                </select>
+                                    className="mt-1 block w-full"
+                                />
                                 <InputError
-                                    message={errors.role}
+                                    message={errors.roles}
                                     className="mt-2"
                                 />
                             </div>
@@ -144,8 +157,8 @@ export default function Edit({ user, coursesOfStudy }) {
                             </div>
 
                             {/* Student-Specific Fields */}
-                            {(data.role === "student" ||
-                                data.role === "course_rep") && (
+                            {(data.roles.includes("student") ||
+                                data.roles.includes("course rep")) && (
                                 <>
                                     <div className="mt-4">
                                         <InputLabel
@@ -186,7 +199,9 @@ export default function Edit({ user, coursesOfStudy }) {
                                             }
                                             required
                                         >
-                                            <option value="">Select Level</option>
+                                            <option value="">
+                                                Select Level
+                                            </option>
                                             <option value="100">100</option>
                                             <option value="200">200</option>
                                             <option value="300">300</option>
@@ -240,7 +255,8 @@ export default function Edit({ user, coursesOfStudy }) {
                             )}
 
                             {/* Lecturer-Specific Fields */}
-                            {(data.role === "lecturer" || data.role === "hod") && (
+                            {(data.roles.includes("lecturer") ||
+                                data.roles.includes("hod")) && (
                                 <div className="mt-4">
                                     <InputLabel
                                         htmlFor="staff_id"

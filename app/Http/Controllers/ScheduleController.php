@@ -7,6 +7,8 @@ use App\Models\Course;
 use App\Models\Schedule;
 use App\Models\Semester;
 use App\Models\AcademicYear;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreScheduleRequest;
 use App\Http\Requests\UpdateScheduleRequest;
 
@@ -15,14 +17,25 @@ class ScheduleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $schedules = Schedule::with(['course', 'lecturer', 'semester'])->get();
         $courses = Course::all();
         $semesters = Semester::all();
-        $lecturers = User::where('role', 'lecturer')->get();
+        $lecturers = User::role('lecturer')->get();
         $venues = Schedule::distinct()->pluck('venue');
         $academicYears = AcademicYear::all();
+
+        if ($request->user()->hasRole('course rep')) {
+            
+            $courses = $request->user()->coursesAsStudent;
+            $lecturers = $request->user()->coursesAsStudent->map(function ($course) {
+                return $course->lecturers;
+            })->flatten()->unique('id');
+            $schedules = Schedule::whereIn('course_id', $courses->pluck('id'))
+                ->with(['course', 'lecturer', 'semester'])
+                ->get();
+        }
 
         return inertia('Auth/Schedules/Index', [
             'schedules' => $schedules,
@@ -37,12 +50,21 @@ class ScheduleController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        
         $courses = Course::all();
         $semesters = Semester::all();
-        $lecturers = User::where('role', 'lecturer')->get();
+        $lecturers = User::role('lecturer')->get();
         $academicYears = AcademicYear::all();
+
+        if ($request->user()->hasRole('course rep')) {
+            
+            $courses = $request->user()->coursesAsStudent;
+            $lecturers = $request->user()->coursesAsStudent->map(function ($course) {
+                return $course->lecturers;
+            })->flatten()->unique('id');
+        }
 
         return inertia('Auth/Schedules/Create', [
             'courses' => $courses,
@@ -84,7 +106,7 @@ class ScheduleController extends Controller
         $schedule->load(['course', 'lecturer', 'semester']);
         $courses = Course::all();
         $semesters = Semester::all();
-        $lecturers = User::where('role', 'lecturer')->get();
+        $lecturers = User::role('lecturer')->get();
         $academicYears = AcademicYear::all();
 
         return inertia('Auth/Schedules/Edit', [

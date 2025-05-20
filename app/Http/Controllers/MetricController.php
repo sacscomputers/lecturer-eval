@@ -32,7 +32,7 @@ class MetricController extends Controller
     public function store(StoreMetricRequest $request)
     {
         $validatedData = $request->validated();
-        dd($validatedData);
+        
         Metric::create($validatedData);
 
         return redirect(route('metrics.index', absolute: false))->with('success', 'Metric added successfully');

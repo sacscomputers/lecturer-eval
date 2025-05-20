@@ -28,20 +28,20 @@ class CourseController extends Controller
     {
         
         // check if user is an admin
-        if ($request->user()->isAdmin()) {
+        if ($request->user()->hasRole('admin')) {
             $courses = Course::with('department')->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
         }
 
         // check if user is a lecturer
-        if ($request->user()->isLecturer()) {
+        if ($request->user()->hasRole('lecturer')) {
            
             $courses = $request->user()->coursesAsLecturer()->with('department')->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
         }
 
         // check if user is a student
-        if ($request->user()->isStudent()) {
+        if ($request->user()->hasRole('student')) {
             
             $courses = $request->user()->coursesAsStudent()->with('department')->get();
             return Inertia::render('Auth/Courses/Index', compact('courses'));
@@ -80,8 +80,9 @@ class CourseController extends Controller
         $lecturers = $course->lecturers()->get();
         $students = $course->students()->get();
         $user = $request->user();
-        $department = $course->department();
-    
+        $department = $course->department()->get()[0];
+        $schedules = $course->schedules()->get();
+        // dd($department);
         return Inertia::render('Auth/Courses/Show', compact('course', 'user', 'lecturers', 'students', 'department'));
     }
 
@@ -173,7 +174,7 @@ class CourseController extends Controller
     public function assign(User $lecturer)
     {
         
-        if (!$lecturer->isLecturer()) {
+        if (!$lecturer->hasRole('lecturer')) {
             return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
         } else {
             $coursesAssigned = $lecturer->coursesAsLecturer()->get();
@@ -189,7 +190,7 @@ class CourseController extends Controller
     public function assignCourse(Request $request, User $lecturer)
     {
         // Ensure the user is a lecturer
-        if (!$lecturer->isLecturer()) {
+        if (!$lecturer->hasRole('lecturer')) {
             return Redirect::route('courses.index')->with('error', 'User is not a lecturer.');
         }
     
@@ -250,7 +251,7 @@ class CourseController extends Controller
         $academicYears = AcademicYear::all();
         $semesters = Semester::all();
         $levels = ['100', '200', '300', '400', '500'];
-        $students = User::where('role', 'student')->orWhere('role', 'course_rep')->get();
+        $students = User::role('student')->get();
         $studentsEnrolled = $course->students()->get();
         $coursesOfStudy = CourseOfStudy::all();
         return Inertia::render('Auth/Courses/EnrollStudents', compact('course', 'students', 'studentsEnrolled', 'levels', 'coursesOfStudy', 'academicYears', 'semesters'));
@@ -361,7 +362,7 @@ class CourseController extends Controller
 public function evaluateLecturerForm(Request $request, User $lecturer, Course $course)
 {
     $metrics = [];
-    if ($request->user()->role == 'hod') {
+    if ($request->user()->hasRole('hod')) {
         $metrics = Metric::where('type', 'hod')->get();
     } else {
         $metrics = Metric::where('type', 'student')->get();
@@ -369,7 +370,7 @@ public function evaluateLecturerForm(Request $request, User $lecturer, Course $c
     
 
     // Check if the user is a student
-    if (!$request->user()->isStudent() && !$request->user()->role == 'hod') {
+    if (!$request->user()->hasRole('student') && !$request->user()->hasRole('hod')) {
         return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
     }
 
@@ -412,7 +413,7 @@ public function evaluateLecturerForm(Request $request, User $lecturer, Course $c
     public function evaluateLecturer(Request $request, User $lecturer, Course $course)
     {
         // Check if the user is a student
-        if (!$request->user()->isStudent() && !$request->user()->isHod()) {
+        if (!$request->user()->hasRole('student') && !$request->user()->hasRole('hod')) {
             return Redirect::route('courses.index')->with('error', 'You are not authorized to evaluate this lecturer.');
         }
     

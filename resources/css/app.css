@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.fc-event-title, .fc-list-event-title {
+    text-decoration: underline;
+    cursor: pointer;
+}

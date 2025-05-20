@@ -28,6 +28,12 @@ class Course extends Model
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
+
+    // schedules for the course
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class);
+    }
 }
 
 

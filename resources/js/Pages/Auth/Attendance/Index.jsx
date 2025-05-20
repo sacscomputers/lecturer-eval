@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
@@ -17,19 +16,48 @@ export default function Index({ attendances }) {
         },
         {
             name: "Course",
-            selector: (row) => row.course?.title || "N/A",
+            selector: (row) =>
+                (
+                    <Link
+                        href={route("courses.show", row.course?.id)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                    >
+                        {row.course?.title}
+                    </Link>
+                ) || "N/A",
         },
         {
             name: "Lecturer",
-            selector: (row) => row.lecturer?.name || "N/A",
+            selector: (row) => (
+                <Link
+                    href={route("users.show", row.lecturer?.id)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                >
+                    {row.lecturer?.name}
+                </Link>
+            ) || "N/A",
         },
         {
             name: "Semester",
-            selector: (row) => row.semester?.name || "N/A",
+            selector: (row) => (
+                <Link
+                    href={route("semesters.show", row.semester?.id)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                >
+                    {row.semester?.name}
+                </Link>
+            ) || "N/A",
         },
         {
             name: "Academic Year",
-            selector: (row) => row.academic_year?.name || "N/A",
+            selector: (row) => (
+                <Link
+                    href={route("academicYears.show", row.academic_year?.id)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                >
+                    {row.academic_year?.name}
+                </Link>
+            ) || "N/A",
         },
         {
             name: "Status",
@@ -53,21 +81,23 @@ export default function Index({ attendances }) {
                     >
                         View
                     </Link>
-                    {(user.role == 'admin' || user.role == 'hod') && (<>
-                        <Link
-                        href={route("attendance.edit", row.id)}
-                        className="text-yellow-600 hover:text-yellow-900 mr-4"
-                    >
-                        Edit
-                    </Link>
-                    {  }
-                    <button
-                        onClick={() => openModal(row)}
-                        className="text-red-600 hover:text-red-900"
-                    >
-                        Delete
-                    </button>
-                    </>)}
+                    {(user.role == "admin" || user.role == "hod") && (
+                        <>
+                            <Link
+                                href={route("attendance.edit", row.id)}
+                                className="text-yellow-600 hover:text-yellow-900 mr-4"
+                            >
+                                Edit
+                            </Link>
+                            {}
+                            <button
+                                onClick={() => openModal(row)}
+                                className="text-red-600 hover:text-red-900"
+                            >
+                                Delete
+                            </button>
+                        </>
+                    )}
                 </>
             ),
         },

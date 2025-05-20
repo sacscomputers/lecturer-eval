@@ -71,7 +71,7 @@ export default function Show({ course, department, lecturers, students }) {
             name: "Action",
             cell: (row) => (
                 <>
-                    {user.role == "admin" && (
+                    {user.role_names.includes("admin") && (
                         <button
                             onClick={() => openModal("lecturer", row.id)}
                             className="text-red-600 hover:text-red-900"
@@ -80,7 +80,7 @@ export default function Show({ course, department, lecturers, students }) {
                         </button>
                     )}
                     {
-                        (user.role == 'student' || user.role == 'course_rep' || user.role == 'hod') && (<Link
+                        (user.role_names.includes('student') || user.role_names.includes('course_rep') || user.role_names.includes('hod')) && (<Link
                             className="text-green-600 hover:text-green-900 ml-4"
                             href={route("lecturers.evaluate", {
                                 course: course.id,
@@ -109,7 +109,7 @@ export default function Show({ course, department, lecturers, students }) {
         },
         {
             name: "Name",
-            selector: (row) => row.name,
+            selector: (row) => <Link href={route('users.show', row.id)} className='hover:underline'>{row.name}</Link>,
         },
         {
             name: "Email",
@@ -142,6 +142,16 @@ export default function Show({ course, department, lecturers, students }) {
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     {/* Course Details */}
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                         {/* Back Button */}
+                                                <div className="flex justify-end mb-4">
+                                                    <Link
+                                                        href={route("courses.index")}
+                                                        className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
+                                                        as="button"
+                                                    >
+                                                        Back
+                                                    </Link>
+                                                </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-4">
                             {course.title}
                         </h3>
@@ -172,13 +182,14 @@ export default function Show({ course, department, lecturers, students }) {
                                     Department
                                 </dt>
                                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                    {department?.name || "N/A"}
+                                <Link href={route('departments.show', department?.id)} className='hover:underline'>{department?.name || "N/A"}</Link>
+                                    
                                 </dd>
                             </div>
                         </dl>
                         <div className="mt-6 flex space-x-4 justify-end">
                             {/* Enroll Button */}
-                            {(user.role == "hod" || user.role == "admin") && (
+                            {(user.role_names.includes("hod") || user.role_names.includes("admin")) && (
                                 <Link
                                     href={route("courses.enroll", course.id)}
                                     className="text-green hover:text-green-700 px-4 py-2 "
@@ -187,7 +198,7 @@ export default function Show({ course, department, lecturers, students }) {
                                 </Link>
                             )}
 
-                            {user.role == "admin" && (
+                            {user.role_names.includes("admin") && (
                                 <>
                                     <Link
                                         href={route("courses.edit", course.id)}
@@ -267,7 +278,7 @@ export default function Show({ course, department, lecturers, students }) {
                         </div>
 
                         {/* Students */}
-                        {user.role == "admin" && (
+                        {user.role_names.includes("admin") && (
                             <>
                                 <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">

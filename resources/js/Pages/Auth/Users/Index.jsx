@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "react-data-table-component";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 
 export default function Index({ users, roles, levels, coursesOfStudy }) {
     const user = usePage().props.auth.user;
-    const { errors } = usePage().props
+    const { errors } = usePage().props;
+    const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const { delete: destroy } = useForm();
@@ -23,13 +25,17 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
         const matchesSearch =
             user.name.toLowerCase().includes(search.toLowerCase()) ||
             user.email.toLowerCase().includes(search.toLowerCase());
-        const matchesRole = selectedRole ? user.role == selectedRole : true;
+        const matchesRole = selectedRole
+            ? user.role_names.includes(selectedRole)
+            : true;
         const matchesLevel = selectedLevel ? user.level == selectedLevel : true;
         const matchesCourseOfStudy = selectedCourseOfStudy
             ? user.course_of_study_id == selectedCourseOfStudy
             : true;
 
-        return matchesSearch && matchesRole && matchesLevel && matchesCourseOfStudy;
+        return (
+            matchesSearch && matchesRole && matchesLevel && matchesCourseOfStudy
+        );
     });
 
     const columns = [
@@ -49,23 +55,36 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
         },
         {
             name: "Name",
-            selector: (row) => row.name,
+            selector: (row) => (
+                <Link href={route("users.show", row.id)} className="underline">
+                    {row.name}
+                </Link>
+            ),
         },
         {
             name: "Email",
             selector: (row) => row.email,
+            hide: "sm",
         },
         {
             name: "Role",
-            selector: (row) => row.role,
+            selector: (row) =>
+                row.roles.map((role) => (
+                    <div className="bg-black/50 w-fit text-white shadow-sm rounded-lg px-5 mb-1">
+                        {role.name}
+                    </div>
+                )),
+            hide: "md",
         },
         {
             name: "Level",
             selector: (row) => row.level || "N/A",
+            hide: "md",
         },
         {
             name: "Course of Study",
             selector: (row) => row.course_of_study?.name || "N/A",
+            hide: "md",
         },
         {
             name: "Action",
@@ -91,12 +110,13 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                     </button>
                 </>
             ),
+            hide: "md",
         },
     ];
 
     function submit(e) {
         e.preventDefault();
-        post(route('users.bulk-upload'), {
+        post(route("users.bulk-upload"), {
             data: data,
             onSuccess: () => {
                 setData("file", null);
@@ -106,6 +126,24 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
             },
         });
     }
+
+    const handleDownload = () => {
+        const headers = [
+            "name,email,password,role,photo,level,course_of_study_id,matric_number,staff_id",
+        ];
+        const csvContent = headers.join("\n");
+        const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "user_template.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const openModal = (user) => {
         setSelectedUser(user);
@@ -137,7 +175,15 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         {/* Bulk Upload and Create User */}
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-between items-center mb-4 relative group">
+                            {/* info icon */}
+                            <button
+                                className="text-blue-500 hover:text-blue-700"
+                                onClick={() => setIsOpen(true)}
+                                title="Info"
+                            >
+                                <AiOutlineInfoCircle size={24} />
+                            </button>
                             {/* Bulk Upload Users */}
                             <form
                                 onSubmit={submit}
@@ -150,24 +196,29 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                                         setData("file", e.target.files[0])
                                     }
                                 />
-                                
+
                                 <button
                                     type="submit"
                                     className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition"
                                 >
                                     Bulk Upload
                                 </button>
-                                {errors.file && <p className="text-red-500">{errors.file}</p>}
+                                {errors.file && (
+                                    <p className="text-red-500">
+                                        {errors.file}
+                                    </p>
+                                )}
                             </form>
-                            
 
                             {/* Create User Button */}
-                            {user.role == 'admin' && (<Link
-                                href={route("users.create")}
-                                className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
-                            >
-                                Create User
-                            </Link>)}
+                            {user.role_names.includes("admin") && (
+                                <Link
+                                    href={route("users.create")}
+                                    className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200"
+                                >
+                                    Create User
+                                </Link>
+                            )}
                         </div>
 
                         {/* Search and Filters */}
@@ -184,7 +235,9 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                             {/* Filter by Role */}
                             <select
                                 value={selectedRole}
-                                onChange={(e) => setSelectedRole(e.target.value)}
+                                onChange={(e) =>
+                                    setSelectedRole(e.target.value)
+                                }
                                 className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/4"
                             >
                                 <option value="">All Roles</option>
@@ -198,7 +251,9 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                             {/* Filter by Level */}
                             <select
                                 value={selectedLevel}
-                                onChange={(e) => setSelectedLevel(e.target.value)}
+                                onChange={(e) =>
+                                    setSelectedLevel(e.target.value)
+                                }
                                 className="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-1/4"
                             >
                                 <option value="">All Levels</option>
@@ -240,6 +295,43 @@ export default function Index({ users, roles, levels, coursesOfStudy }) {
                     </div>
                 </div>
             </div>
+
+            {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+                        <h2 className="text-lg font-semibold mb-4">
+                            Upload Instructions
+                        </h2>
+                        <p className="mb-4">
+                            You can download the template below, fill it and
+                            upload here.
+                            <ul>
+                                <li><span className="font-bold"> name</span> (required)</li>
+                                <li><span className="font-bold"> email</span> (required)</li>
+                                <li><span className="font-bold"> password</span> (required)</li>
+                                <li><span className="font-bold"> role</span> (required)</li>
+                                <li><span className="font-bold"> photo</span> (optional)</li>
+                                <li><span className="font-bold"> level</span> (optional)</li>
+                                <li><span className="font-bold"> course_of_study_id</span> (optional)</li>
+                                <li><span className="font-bold"> matric_number</span> (optional)</li>
+                                <li><span className="font-bold"> staff_id</span> (optional)</li>
+                            </ul>
+                        </p>
+                        <button
+                            onClick={handleDownload}
+                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        >
+                            Download Template
+                        </button>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="mt-4 text-sm text-gray-600 hover:underline block"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

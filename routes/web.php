@@ -37,15 +37,22 @@ Route::middleware('auth')->group(function () {
 });
 
 // course_rep and hod
-Route::middleware(['auth', 'role:course_rep,admin,hod'])->group(function () {
+Route::middleware(['auth', 'role:course rep|admin|hod'])->group(function () {
     // Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
     // Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');
 
     Route::resource('/attendance', AttendanceController::class)->names('attendance');
     Route::get('/schedules', [ScheduleController::class, 'index'])->name('schedules.index');
+
+    // Schedules as individual routes
+    Route::get('/schedules/create', [ScheduleController::class, 'create'])->name('schedules.create');
+    Route::get('/schedules/{schedule}', [ScheduleController::class, 'show'])->name('schedules.show');
+    Route::post('/schedules', [ScheduleController::class, 'store'])->name('schedules.store');
+    Route::get('/schedules/{schedule}/edit', [ScheduleController::class, 'edit'])->name('schedules.edit');
+    Route::post('/schedules/{schedule}', [ScheduleController::class, 'update'])->name('schedules.update');
 });
 
-Route::middleware(['auth', 'role:admin,hod'])->group(function () {
+Route::middleware(['auth', 'role:admin|hod'])->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -109,16 +116,10 @@ Route::middleware(['auth', 'role:admin,hod'])->group(function () {
     // CoursesOfStudy
     Route::resource('courses-of-study', CourseOfStudyController::class)->names('coursesOfStudy');
 
-    // Schedules as individual routes
-    Route::get('/schedules/create', [ScheduleController::class, 'create'])->name('schedules.create');
-    Route::get('/schedules/{schedule}', [ScheduleController::class, 'show'])->name('schedules.show');
-    Route::post('/schedules', [ScheduleController::class, 'store'])->name('schedules.store');
-    Route::get('/schedules/{schedule}/edit', [ScheduleController::class, 'edit'])->name('schedules.edit');
-    Route::post('/schedules/{schedule}', [ScheduleController::class, 'update'])->name('schedules.update');
     Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
 });
 
-Route::middleware(['auth', 'role:student,course_rep,hod'])->group(function () {
+Route::middleware(['auth', 'role:student|course rep|hod'])->group(function () {
     // evaluate lecturer
     Route::get('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturerForm'])->name('lecturers.evaluate');
     Route::post('lecturer/{lecturer}/course/{course}/evaluate', [CourseController::class, 'evaluateLecturer'])->name('lecturers.evaluate');

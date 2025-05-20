@@ -47,7 +47,9 @@ export default function Show({ schedule }) {
                     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                         <div className="px-4 py-5 sm:px-6">
                             <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                {schedule.course.title}
+                            <Link
+                            href={route("courses.show", schedule.course.id)} className="hover:underline">{schedule.course.title}</Link>
+                                
                             </h3>
                             <p className="mt-1 max-w-2xl text-sm text-gray-500">
                                 Schedule Information
@@ -61,7 +63,9 @@ export default function Show({ schedule }) {
                                         Lecturer
                                     </dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        {schedule.lecturer.name}
+                                    <Link
+                            href={route("users.show", schedule.lecturer.id)} className="hover:underline">{schedule.lecturer.name}</Link>
+                                        
                                     </dd>
                                 </div>
 
@@ -71,7 +75,9 @@ export default function Show({ schedule }) {
                                         Semester
                                     </dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        {schedule.semester.name}
+                                    <Link
+                                    href={route("semesters.show", schedule.semester.id)} className="hover:underline">{schedule.semester.name}</Link>
+                                        
                                     </dd>
                                 </div>
 
@@ -81,7 +87,9 @@ export default function Show({ schedule }) {
                                         Academic Year
                                     </dt>
                                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                        {schedule.academic_year.name}
+                                    <Link
+                                    href={route("academicYears.show", schedule.academic_year.id)} className="hover:underline">{schedule.academic_year.name}</Link>
+                                        
                                     </dd>
                                 </div>
 
@@ -120,7 +128,7 @@ export default function Show({ schedule }) {
 
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-end">
-                       { user.role == 'admin' && (<>
+                       { user.role_names.includes('admin') && (<>
                         <Link
                             href={route("schedules.edit", schedule.id)}
                             className="text-blue-600 hover:text-blue-900 mr-4"

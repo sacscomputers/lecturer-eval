@@ -18,13 +18,7 @@ export default function Dashboard({ summary }) {
             color: "bg-green-500",
             icon: "📘",
         },
-        // {
-        //     title: "Lecturers",
-        //     count: summary.lecturers,
-        //     link: route("users.index"),
-        //     color: "bg-yellow-500",
-        //     icon: "🎓",
-        // },
+        
         {
             title: "Metrics",
             count: summary.metrics,
@@ -77,7 +71,7 @@ export default function Dashboard({ summary }) {
                         <div className="p-6 text-gray-900">
                             You're logged in!
                         </div>
-                        {user.role == "admin" && (
+                        {user.role_names.includes("admin") && (
                             <div
                                 className="py-12"
                                 style={{

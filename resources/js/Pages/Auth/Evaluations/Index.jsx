@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import DataTable from "react-data-table-component";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import { Bar, Line } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -112,9 +112,9 @@ export default function Index({ evaluations, semesters, academicYears, metrics, 
     }, [filteredEvaluations]);
 
     const columns = [
-        { name: "Lecturer Name", selector: (row) => row.lecturer.name, sortable: true },
-        { name: "Course Name", selector: (row) => row.course.title, sortable: true },
-        { name: "Metric", selector: (row) => row.metric.name, sortable: true },
+        { name: "Lecturer Name", selector: (row) => <Link href={route('users.show', row.lecturer.id)} className='underline'>{row.lecturer.name}</Link>, sortable: true },
+        { name: "Course Name", selector: (row) => <Link href={route('courses.show', row.course.id)} className='underline'>{row.course.title}</Link>, sortable: true },
+        { name: "Metric", selector: (row) => <Link href={route('metrics.show', row.metric.name)} className='underline'>{row.metric.name}</Link>, sortable: true },
         { name: "Average Rating", selector: (row) => row.average_rating?.toFixed(2), sortable: true },
         { name: "Total Evaluations", selector: (row) => row.total_evaluations, sortable: true },
     ];

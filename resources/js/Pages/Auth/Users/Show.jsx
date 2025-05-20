@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { Bar, Line } from "react-chartjs-2";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { Bar, Line, Doughnut } from "react-chartjs-2";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -9,6 +9,7 @@ import {
     BarElement,
     LineElement,
     PointElement,
+    ArcElement, 
     Title,
     Tooltip,
     Legend,
@@ -22,12 +23,15 @@ ChartJS.register(
     BarElement,
     LineElement,
     PointElement,
+    ArcElement,
     Title,
     Tooltip,
     Legend
 );
 
-export default function Show({ user, evaluations, metrics }) {
+export default function Show({ user, evaluations, metrics, attendances }) {
+    console.log(attendances);
+    const authenticatedUser = usePage().props.auth.user;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { delete: destroy } = useForm();
 
@@ -53,6 +57,32 @@ export default function Show({ user, evaluations, metrics }) {
             ? totalRating / metricEvaluations.length
             : 0;
     });
+
+    const attendanceLabels = ["Present", "Absent"];
+    const attendanceData = [attendances.present, attendances.absent];
+
+    const donutChartData = {
+        labels: attendanceLabels,
+        datasets: [
+            {
+                data: attendanceData,
+                backgroundColor: ["#22c55e", "#ef4444"], // green, red
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const barAttendanceData = {
+        labels: attendanceLabels,
+        datasets: [
+            {
+                label: "Attendance Count",
+                data: attendanceData,
+                backgroundColor: ["#22c55e", "#ef4444"],
+                borderRadius: 8,
+            },
+        ],
+    };
 
     const barChartData = {
         labels: metricLabels,
@@ -94,7 +124,7 @@ export default function Show({ user, evaluations, metrics }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    User Details
+                    Users / {user.name}
                 </h2>
             }
         >
@@ -102,8 +132,8 @@ export default function Show({ user, evaluations, metrics }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                     {/* Main Card */}
-                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    {/* Main Card */}
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <div className="flex justify-end mb-4">
                             <Link
                                 href={route("users.index")}
@@ -148,16 +178,24 @@ export default function Show({ user, evaluations, metrics }) {
                                     {/* Role */}
                                     <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                         <dt className="text-sm font-medium text-gray-500">
-                                            Role
+                                            Roles
                                         </dt>
-                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                            {user.role}
+                                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex">
+                                            {user.role_names.map(
+                                                (role_name) => (
+                                                    <div className="bg-black/50 w-fit text-white shadow-sm rounded-lg px-5 mr-1">
+                                                        {role_name}
+                                                    </div>
+                                                )
+                                            )}
                                         </dd>
                                     </div>
 
                                     {/* Student-Specific Fields */}
-                                    {(user.role === "student" ||
-                                        user.role === "course_rep") && (
+                                    {(user.role_names.includes("student") ||
+                                        user.role_names.includes(
+                                            "course rep"
+                                        )) && (
                                         <>
                                             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                                 <dt className="text-sm font-medium text-gray-500">
@@ -180,16 +218,16 @@ export default function Show({ user, evaluations, metrics }) {
                                                     Course of Study
                                                 </dt>
                                                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                    {user.course_of_study?.name ||
-                                                        "N/A"}
+                                                    {user.course_of_study
+                                                        ?.name || "N/A"}
                                                 </dd>
                                             </div>
                                         </>
                                     )}
 
                                     {/* Lecturer-Specific Fields */}
-                                    {(user.role === "lecturer" ||
-                                        user.role === "hod") && (
+                                    {(user.role_names.includes("lecturer") ||
+                                        user.role_names.includes("hod")) && (
                                         <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                             <dt className="text-sm font-medium text-gray-500">
                                                 Staff ID
@@ -209,7 +247,7 @@ export default function Show({ user, evaluations, metrics }) {
                             >
                                 Edit
                             </Link>
-                            {user.role === "lecturer" && (
+                            {user.role_names.includes("lecturer") && (
                                 <Link
                                     href={route("courses.assign", user.id)}
                                     className="text-blue-600 hover:text-blue-900 mr-4"
@@ -226,46 +264,90 @@ export default function Show({ user, evaluations, metrics }) {
                         </div>
                     </div>
 
-
                     {/* Evaluation Summary and Charts */}
-                    { (user.role == 'lecturer') && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Evaluation Summary */}
-                        <div className="bg-white p-6 shadow rounded-2xl space-y-4">
-                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <Star className="text-yellow-500" />
-                                Evaluation Summary
-                            </h3>
-                            <div className="text-gray-700 space-y-2">
-                                <p className="flex items-center gap-2 text-base">
-                                    <CheckCircle className="text-green-500" size={20} />
-                                    <span className="font-medium">Total Evaluations:</span>
-                                    <span className="text-lg font-bold">{evaluations.length}</span>
-                                </p>
-                                <p className="flex items-center gap-2 text-base">
-                                    <CheckCircle className="text-blue-500" size={20} />
-                                    <span className="font-medium">Average Rating:</span>
-                                    <span className="text-lg font-bold">{averageRating}</span>
-                                </p>
+                    {user.role_names.includes("lecturer") && (
+                        <>
+                            <div className="grid grid-cols-auto md:grid-cols-2 gap-6 ">
+                            {/* Evaluation Summary */}
+                            <div className="bg-white p-6 shadow rounded-2xl space-y-4 w-fit h-fit">
+                                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <Star className="text-yellow-500" />
+                                    Evaluation Summary
+                                </h3>
+                                <div className="text-gray-700 space-y-2">
+                                    <p className="flex items-center gap-2 text-base">
+                                        <CheckCircle
+                                            className="text-green-500"
+                                            size={20}
+                                        />
+                                        <span className="font-medium">
+                                            Total Evaluations:
+                                        </span>
+                                        <span className="text-lg font-bold">
+                                            {evaluations.length}
+                                        </span>
+                                    </p>
+                                    <p className="flex items-center gap-2 text-base">
+                                        <CheckCircle
+                                            className="text-blue-500"
+                                            size={20}
+                                        />
+                                        <span className="font-medium">
+                                            Average Rating:
+                                        </span>
+                                        <span className="text-lg font-bold">
+                                            {averageRating}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Bar Chart */}
-                        <div className="bg-white p-6 shadow rounded-2xl">
-                            <h3 className="text-lg font-semibold mb-4">
-                                Performance by Metric (Bar)
-                            </h3>
-                            <Bar data={barChartData} />
-                        </div>
+                            {/* Bar Chart */}
+                            <div className="bg-white p-6 shadow rounded-2xl">
+                                <h3 className="text-lg font-semibold mb-4">
+                                    Performance by Metric (Bar)
+                                </h3>
+                                <Bar data={barChartData} />
+                            </div>
 
-                        {/* Line Chart */}
-                        <div className="bg-white p-6 shadow rounded-2xl md:col-span-2">
-                            <h3 className="text-lg font-semibold mb-4">
-                                Performance Trend (Line)
-                            </h3>
-                            <Line data={lineChartData} />
+                            {/* Line Chart */}
+                            <div className="bg-white p-6 shadow rounded-2xl md:col-span-2">
+                                <h3 className="text-lg font-semibold mb-4">
+                                    Performance Trend (Line)
+                                </h3>
+                                <Line data={lineChartData} />
+                            </div>
+
+                            
                         </div>
-                    </div>
+                        {/* Attendance Charts */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                                {/* Donut Chart Card */}
+                                <div className="bg-white p-6 shadow rounded-2xl flex flex-col items-center">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        Attendance Distribution
+                                    </h3>
+                                    <Doughnut data={donutChartData} />
+                                    <div className="flex justify-center gap-4 mt-4">
+                                        <span className="flex items-center gap-2">
+                                            <span className="inline-block w-full h-3 rounded-full bg-green-500"></span>
+                                            Present: {attendances.present}
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <span className="inline-block w-1/2 h-3 rounded-full bg-red-500"></span>
+                                            Absent: {attendances.absent}
+                                        </span>
+                                    </div>
+                                </div>
+                                {/* Bar Chart Card */}
+                                <div className="bg-white p-6 shadow rounded-2xl flex flex-col items-center">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        Attendance Bar Chart
+                                    </h3>
+                                    <Bar data={barAttendanceData} />
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
@@ -274,7 +356,9 @@ export default function Show({ user, evaluations, metrics }) {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+                        <h2 className="text-lg font-semibold mb-4">
+                            Confirm Delete
+                        </h2>
                         <p>Are you sure you want to delete this user?</p>
                         <div className="mt-4 flex justify-end">
                             <button

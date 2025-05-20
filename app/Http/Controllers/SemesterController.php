@@ -35,7 +35,7 @@ class SemesterController extends Controller
     {
         $validated = $request->validated();
         Semester::create($validated);
-        return redirect()->route('semesters.index');
+        return redirect()->route('semesters.index')->with('success', 'semester created successfully');
     }
 
     /**
@@ -62,7 +62,7 @@ class SemesterController extends Controller
     {
         $validated = $request->validated();
         $semester->update($validated);
-        return redirect()->route('semesters.index');
+        return redirect()->route('semesters.index')->with('success', 'semester created successfully');
     }
 
     /**

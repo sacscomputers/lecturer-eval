@@ -15,7 +15,7 @@ export default function Index({ coursesOfStudy }) {
         },
         {
             name: "Name",
-            selector: (row) => row.name,
+            selector: (row) => <Link href={route("coursesOfStudy.show", row.id)} className="underline">{row.name}</Link>,
         },
         {
             name: "Code",
@@ -23,7 +23,7 @@ export default function Index({ coursesOfStudy }) {
         },
         {
             name: "Department",
-            selector: (row) => row.department?.name || "N/A",
+            selector: (row) => <Link href={route("coursesOfStudy.show", row.id)} className="underline">{row.department?.name}</Link> || "N/A",
         },
         {
             name: "Duration (Years)",

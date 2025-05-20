@@ -18,7 +18,12 @@ export default function Index({ academicYears }) {
         },
         {
             name: "Name",
-            selector: (row) => row.name,
+            selector: (row) => <Link
+            href={route("academicYears.show", row.id)}
+            className="underline"
+        >
+            {row.name}
+        </Link>,
         },
         {
             name: "Start Date",
@@ -27,6 +32,7 @@ export default function Index({ academicYears }) {
         {
             name: "End Date",
             selector: (row) => row.end_date,
+            hide: 'md'
         },
         {
             name: "Action",
@@ -52,6 +58,7 @@ export default function Index({ academicYears }) {
                     </button>
                 </>
             ),
+            hide: 'md'
         },
     ];
 

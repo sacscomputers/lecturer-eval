@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Course;
 use App\Models\Metric;
 use App\Models\Student;
@@ -24,8 +25,8 @@ class EvaluationController extends Controller
         $semesters = Semester::with('academicYear')->get();
         $academicYears = AcademicYear::all();
         $courses = Course::all();
-        $students = Student::all();
-        $lecturers = Lecturer::all();
+        $students = User::role('student')->get();
+        $lecturers = User::role('lecturer')->get();
         $metrics = Metric::all();
         return inertia('Auth/Evaluations/Index', compact('evaluations', 'semesters', 'academicYears', 'courses', 'students', 'lecturers', 'metrics'));
     }

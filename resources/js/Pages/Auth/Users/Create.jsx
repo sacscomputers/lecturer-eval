@@ -5,15 +5,16 @@ import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, useForm, Link } from "@inertiajs/react";
+import Select from "react-select";
 
-export default function Create({ coursesOfStudy }) {
+export default function Create({ coursesOfStudy, roles }) {
     const { data, setData, post, processing, errors, progress } = useForm({
         name: "",
         email: "",
         password: "",
         password_confirmation: "",
         photo: null,
-        role: "student",
+        roles: [],
         matric_number: "",
         level: "",
         course_of_study_id: "",
@@ -83,7 +84,10 @@ export default function Create({ coursesOfStudy }) {
 
                             {/* Password Field */}
                             <div className="mt-4">
-                                <InputLabel htmlFor="password" value="Password" />
+                                <InputLabel
+                                    htmlFor="password"
+                                    value="Password"
+                                />
                                 <TextInput
                                     id="password"
                                     type="password"
@@ -157,33 +161,46 @@ export default function Create({ coursesOfStudy }) {
 
                             {/* Role Selection */}
                             <div className="mt-4">
-                                <InputLabel htmlFor="role" value="Role" />
-                                <select
-                                    id="role"
-                                    name="role"
-                                    value={data.role}
-                                    className="mt-1 block w-full rounded-lg"
-                                    onChange={(e) =>
-                                        setData("role", e.target.value)
+                                <InputLabel htmlFor="roles" value="Roles" />
+                                <Select
+                                    id="roles"
+                                    isMulti // Allows multiple selections
+                                    options={[
+                                        { value: "admin", label: "Admin" },
+                                        { value: "student", label: "Student" },
+                                        {
+                                            value: "lecturer",
+                                            label: "Lecturer",
+                                        },
+                                        {
+                                            value: "course rep",
+                                            label: "Course Rep",
+                                        },
+                                        { value: "hod", label: "HOD" },
+                                    ]}
+                                    value={data.roles.map((role) => ({
+                                        value: role,
+                                        label: role,
+                                    }))}
+                                    onChange={(selectedOptions) =>
+                                        setData(
+                                            "roles",
+                                            selectedOptions.map(
+                                                (option) => option.value
+                                            )
+                                        )
                                     }
-                                    required
-                                >
-                                    <option value="lecturer">Lecturer</option>
-                                    <option value="student">Student</option>
-                                    <option value="course_rep">
-                                        Course Rep
-                                    </option>
-                                    <option value="hod">HOD</option>
-                                </select>
+                                    className="mt-1 block w-full"
+                                />
                                 <InputError
-                                    message={errors.role}
+                                    message={errors.roles}
                                     className="mt-2"
                                 />
                             </div>
 
                             {/* Student-Specific Fields */}
-                            {(data.role === "student" ||
-                                data.role === "course_rep") && (
+                            {(data.roles.includes("student") ||
+                                data.roles.includes("course_rep")) && (
                                 <>
                                     <div className="mt-4">
                                         <InputLabel
@@ -224,7 +241,9 @@ export default function Create({ coursesOfStudy }) {
                                             }
                                             required
                                         >
-                                            <option value="">Select Level</option>
+                                            <option value="">
+                                                Select Level
+                                            </option>
                                             <option value="100">100</option>
                                             <option value="200">200</option>
                                             <option value="300">300</option>
@@ -278,7 +297,8 @@ export default function Create({ coursesOfStudy }) {
                             )}
 
                             {/* Lecturer-Specific Fields */}
-                            {(data.role === "lecturer" || data.role === "hod") && (
+                            {(data.roles.includes("lecturer") ||
+                                data.roles.includes("hod")) && (
                                 <div className="mt-4">
                                     <InputLabel
                                         htmlFor="staff_id"

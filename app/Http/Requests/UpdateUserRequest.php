@@ -24,7 +24,8 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->user->id],
-            'role' => ['required', 'string', 'max:255'],
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,name',
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'level' => ['nullable', 'required_if:role,student', 'integer', 'in:100,200,300,400,500,600,700'],
             'course_of_study_id' => ['nullable', 'required_if:role,student', 'exists:courses_of_study,id'],

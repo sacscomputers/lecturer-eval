@@ -20,16 +20,7 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
-        // if user is a course_rep get attendace records for the courses they are rep for
-        // if ($request->user()->role == 'course_rep') {
-        //     $courses = $request->user()->coursesAsStudent();
-        //     $attendances = Attendance::where('recordedBy', $request->user()->id)
-        //         ->with(['course', 'lecturer', 'recordedBy', 'semester', 'academicYear'])
-        //         ->get();
-        //     return inertia('Auth/Attendance/Index', [
-        //         'attendances' => $attendances,
-        //     ]);
-        // }
+        
         $attendances = Attendance::with(['course', 'lecturer', 'recordedBy', 'semester', 'academicYear'])->get();
         return inertia('Auth/Attendance/Index', [
             'attendances' => $attendances,
@@ -43,7 +34,7 @@ class AttendanceController extends Controller
     {
         $courses = Course::all();
         // dd($courses);
-        $lecturers = User::where('role', 'lecturer')->get();
+        $lecturers = User::role('lecturer')->get();
         $semesters = Semester::all();
         $academicYears = AcademicYear::all();
 
@@ -79,7 +70,6 @@ class AttendanceController extends Controller
             ->first();
 
         if ($existingAttendance) {
-            dd("Attendance exists!");
             return back()->with('error', 'Attendance already recorded for this course today.');
         }
 

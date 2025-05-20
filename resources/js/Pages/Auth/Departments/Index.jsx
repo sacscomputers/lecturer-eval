@@ -15,7 +15,12 @@ export default function Index({ departments }) {
         },
         {
             name: "Name",
-            selector: (row) => row.name,
+            selector: (row) => <Link
+            href={route("departments.show", row.id)}
+            className="underline"
+        >
+            {row.name}
+        </Link>,
         },
         {
             name: "Code",

@@ -8,7 +8,6 @@ import { Head, useForm, Link } from "@inertiajs/react";
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
         name: "",
-        session: "",
         start_date: "",
         end_date: "",
     });
@@ -63,7 +62,7 @@ export default function Create() {
                                 />
                             </div>
 
-                            <div className="mt-4">
+                            {/* <div className="mt-4">
                                 <InputLabel htmlFor="session" value="Session" />
                                 <TextInput
                                     id="session"
@@ -80,7 +79,7 @@ export default function Create() {
                                     message={errors.session}
                                     className="mt-2"
                                 />
-                            </div>
+                            </div> */}
 
                             <div className="mt-4">
                                 <InputLabel

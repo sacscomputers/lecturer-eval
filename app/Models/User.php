@@ -3,14 +3,15 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +22,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'photo',
         'matric_number',
         'staff_id',
@@ -38,6 +38,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    protected $appends = ['role_names'];
 
     /**
      * Get the attributes that should be cast.
@@ -62,37 +63,24 @@ class User extends Authenticatable
         return $this->belongsToMany(Course::class, 'course_student');
     }
 
-    public function isLecturer()
-    {
-        return $this->role === 'lecturer' || $this->role === 'hod';
-    }
-
-    public function isStudent()
-    {
-        return $this->role === 'student' || $this->role === 'course_rep';
-    }
-
-    public function isAdmin()
-    {
-        return $this->role === 'admin' || $this->role === 'hod';
-    }
-    public function isHod()
-    {
-        return $this->role === 'hod';
-    }
-    public function isCourseRep()
-    {
-        return $this->role === 'course_rep';
-    }
-
     public function evaluations()
     {
-        return $this->hasMany(Evaluation::class, );
+        return $this->hasMany(Evaluation::class,);
     }
 
     // course of study
     public function courseOfStudy()
     {
         return $this->belongsTo(CourseOfStudy::class, 'course_of_study_id');
+    }
+
+    public function getRoleNamesAttribute()
+    {
+        return $this->getRoleNames(); // Returns a collection of role names
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'lecturer_id');
     }
 }
