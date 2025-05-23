@@ -112,7 +112,9 @@ export default function Index({ evaluations, semesters, academicYears, metrics, 
     const data = labels.map((date) => {
         const ratings = groupedByDate[date];
         const total = ratings.reduce((sum, r) => sum + r, 0);
-        return total / ratings.length;
+        console.log(`Data: ${data}, Rating: ${ratings}, Total: ${total} Total/ratings_lenght: ${total / ratings.length}`);
+        return total / ratings.length;s
+
     });
 
     return {
