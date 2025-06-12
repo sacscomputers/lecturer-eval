@@ -319,9 +319,9 @@ export default function Show({ user, evaluations, metrics, attendances }) {
                     {/* Evaluation Summary and Charts */}
                     {user.role_names.includes("lecturer") && (
                         <div className="max-w-3xl mx-auto">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 mb-8">
                                 {/* Evaluation Summary */}
-                                <div className="bg-white p-6 shadow rounded-2xl space-y-4 w-fit h-fit md:col-span-2">
+                                <div className="bg-white p-6 shadow rounded-2xl space-y-4 h-fit">
                                     <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                         <Star className="text-yellow-500" />
                                         Evaluation Summary
