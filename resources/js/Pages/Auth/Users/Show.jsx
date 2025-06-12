@@ -166,8 +166,10 @@ export default function Show({ user, evaluations, metrics, attendances }) {
     };
 
     const averageRating = (
-        evaluations.reduce((sum, evalItem) => sum + parseFloat(evalItem.rating), 0) /
-        (evaluations.length || 1)
+        evaluations.reduce(
+            (sum, evalItem) => sum + parseFloat(evalItem.rating),
+            0
+        ) / (evaluations.length || 1)
     ).toFixed(2);
 
     return (
@@ -181,10 +183,10 @@ export default function Show({ user, evaluations, metrics, attendances }) {
             <Head title="User Details" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                
                     {/* Main Card */}
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <div className="flex justify-end mb-4">
+                    <div className="bg-white shadow rounded-lg p-4 sm:p-6 lg:p-8 w-full max-w-3xl mx-auto mb-5">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
                             <Link
                                 href={route("users.index")}
                                 className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-800 dark:bg-white dark:border-gray-700 dark:text-gray-900 dark:hover:bg-gray-200 me-2 mb-2"
@@ -316,8 +318,8 @@ export default function Show({ user, evaluations, metrics, attendances }) {
 
                     {/* Evaluation Summary and Charts */}
                     {user.role_names.includes("lecturer") && (
-                        <>
-                            <div className="grid grid-cols-auto md:grid-cols-12 gap-6 ">
+                        <div className="max-w-3xl mx-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
                                 {/* Evaluation Summary */}
                                 <div className="bg-white p-6 shadow rounded-2xl space-y-4 w-fit h-fit md:col-span-2">
                                     <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -353,7 +355,7 @@ export default function Show({ user, evaluations, metrics, attendances }) {
                                 </div>
 
                                 {/* Line Chart */}
-                                <div className="bg-white p-6 shadow rounded-2xl md:col-span-8">
+                                <div className="bg-white p-6 shadow rounded-2xl md:col-span-10">
                                     <h3 className="text-lg font-semibold mb-4">
                                         Performance Trend (Line)
                                     </h3>
@@ -413,9 +415,9 @@ export default function Show({ user, evaluations, metrics, attendances }) {
                                     <Bar data={barAttendanceData} />
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
-                </div>
+                
             </div>
 
             {/* Delete Modal */}
