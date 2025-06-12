@@ -4,7 +4,9 @@ use Inertia\Inertia;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\UserController;
+use App\Console\Commands\PromoteStudents;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\MetricController;
 use App\Http\Controllers\ProfileController;
@@ -53,6 +55,12 @@ Route::middleware(['auth', 'role:course rep|admin|hod'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin|hod'])->group(function () {
+    Route::post('/admin/promote-students', function()
+{
+    Artisan::call('app:promote-students');
+    return back()->with('message', 'Student promotion in progress!');
+})->name('admin.promote-students');
+
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 

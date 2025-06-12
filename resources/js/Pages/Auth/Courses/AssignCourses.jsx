@@ -4,6 +4,7 @@ import Select from "react-select";
 import { Head, useForm } from "@inertiajs/react";
 
 export default function AssignCourses({ lecturer, courses, coursesAssigned, academicYears, semesters }) {
+    console.log(semesters)
     const { data, setData, post, delete: destroy, processing } = useForm({
         course_ids: [],
         academic_year_id: "",
@@ -26,7 +27,7 @@ export default function AssignCourses({ lecturer, courses, coursesAssigned, acad
         setData("academic_year_id", selectedOption ? selectedOption.value : "");
         // Filter semesters based on the selected academic year
         const filtered = semesters.filter(
-            (semester) => semester.academic_year_id === selectedOption.value
+            (semester) => semester.academic_year_id == selectedOption.value
         );
         setFilteredSemesters(filtered);
         setData("semester_id", ""); // Reset semester selection
@@ -40,7 +41,7 @@ export default function AssignCourses({ lecturer, courses, coursesAssigned, acad
     // Handle form submission for assigning courses
     const handleAssign = (e) => {
         e.preventDefault();
-        if (data.course_ids.length === 0 || !data.academic_year_id || !data.semester_id) {
+        if (data.course_ids.length == 0 || !data.academic_year_id || !data.semester_id) {
             alert("Please select courses, an academic year, and a semester.");
             return;
         }

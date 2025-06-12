@@ -5,11 +5,18 @@ import DataTable from "react-data-table-component";
 
 export default function Index({ semesters }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
     const [selectedSemester, setSelectedSemester] = useState(null);
     const { delete: destroy } = useForm();
     const { data, setData, post, progress } = useForm({
         file: null,
     });
+
+    const handlePromote = () => {
+        post(route("admin.promote-students"), {
+            onSuccess: () => setIsPromoteModalOpen(false),
+        });
+    };
 
     const columns = [
         {
@@ -115,6 +122,14 @@ export default function Index({ semesters }) {
                                     Bulk Upload
                                 </button>
                             </form> */}
+                            {/* Update Students Level Button */}
+                            <button
+                                type="button"
+                                onClick={() => setIsPromoteModalOpen(true)}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                            >
+                                Update Students Level
+                            </button>
 
                             {/* Create Semester Button */}
                             <Link
@@ -123,6 +138,8 @@ export default function Index({ semesters }) {
                             >
                                 Create Semester
                             </Link>
+
+                            
                         </div>
 
                         {/* Semesters list */}
@@ -139,7 +156,33 @@ export default function Index({ semesters }) {
                     </div>
                 </div>
             </div>
-
+             {/* Promote Students Confirmation Modal */}
+            {isPromoteModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 className="text-lg font-semibold mb-4">
+                            Confirm Promotion
+                        </h2>
+                        <p>
+                            Are you sure you want to promote all eligible students to the next level? This action cannot be undone.
+                        </p>
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={() => setIsPromoteModalOpen(false)}
+                                className="text-gray-600 hover:text-gray-900 mr-4"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handlePromote}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                            >
+                                Promote Students
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg">

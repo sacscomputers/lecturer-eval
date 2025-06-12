@@ -9,7 +9,7 @@ import {
     BarElement,
     LineElement,
     PointElement,
-    ArcElement, 
+    ArcElement,
     Title,
     Tooltip,
     Legend,
@@ -47,16 +47,51 @@ export default function Show({ user, evaluations, metrics, attendances }) {
     const metricLabels = metrics.map((metric) => metric.name);
     const metricAverages = metrics.map((metric) => {
         const metricEvaluations = evaluations.filter(
-            (evaluation) => evaluation.metric_id === metric.id
+            (evaluation) => evaluation.metric_id == metric.id
         );
         const totalRating = metricEvaluations.reduce(
-            (sum, evaluation) => sum + evaluation.rating,
+            (sum, evaluation) => sum + parseFloat(evaluation.rating) || 0,
             0
         );
         return metricEvaluations.length
             ? totalRating / metricEvaluations.length
             : 0;
     });
+
+    const lineChartData = (() => {
+        const groupedByDate = {};
+        evaluations.forEach((evaluation) => {
+            const date = evaluation.created_at.split("T")[0];
+            if (!groupedByDate[date]) groupedByDate[date] = [];
+            groupedByDate[date].push(evaluation.rating);
+        });
+        console.log(groupedByDate);
+
+        const labels = Object.keys(groupedByDate);
+        const data = labels.map((date) => {
+            const ratings = groupedByDate[date];
+            const total = ratings.reduce(
+                (sum, r) => sum + (parseFloat(r) || 0),
+                0
+            );
+            return total / ratings.length;
+        });
+
+        console.log(`Labels: ${labels}, Data: ${data}`);
+
+        return {
+            labels,
+            datasets: [
+                {
+                    label: "Rating Trends",
+                    data,
+                    fill: false,
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    tension: 0.4,
+                },
+            ],
+        };
+    })();
 
     const attendanceLabels = ["Present", "Absent"];
     const attendanceData = [attendances.present, attendances.absent];
@@ -66,8 +101,12 @@ export default function Show({ user, evaluations, metrics, attendances }) {
         datasets: [
             {
                 data: attendanceData,
-                backgroundColor: ["#22c55e", "#ef4444"], // green, red
-                borderWidth: 1,
+                backgroundColor: [
+                    "rgba(75, 192, 192, 0.7)", // Teal (matches other charts)
+                    "rgba(239, 68, 68, 0.7)", // Red
+                ],
+                borderColor: ["rgba(75, 192, 192, 1)", "rgba(239, 68, 68, 1)"],
+                borderWidth: 2,
             },
         ],
     };
@@ -78,7 +117,12 @@ export default function Show({ user, evaluations, metrics, attendances }) {
             {
                 label: "Attendance Count",
                 data: attendanceData,
-                backgroundColor: ["#22c55e", "#ef4444"],
+                backgroundColor: [
+                    "rgba(75, 192, 192, 0.7)", // Teal
+                    "rgba(239, 68, 68, 0.7)", // Red
+                ],
+                borderColor: ["rgba(75, 192, 192, 1)", "rgba(239, 68, 68, 1)"],
+                borderWidth: 2,
                 borderRadius: 8,
             },
         ],
@@ -98,25 +142,31 @@ export default function Show({ user, evaluations, metrics, attendances }) {
         ],
     };
 
-    const lineChartData = {
-        labels: metricLabels,
-        datasets: [
-            {
-                label: "Average Rating Trend",
-                data: metricAverages,
-                fill: false,
-                borderColor: "rgba(54, 162, 235, 1)",
-                backgroundColor: "rgba(54, 162, 235, 0.3)",
-                tension: 0.4,
-                pointBackgroundColor: "#fff",
-                pointBorderColor: "#36A2EB",
-                pointRadius: 5,
+    const lineChartOptions = {
+        responsive: true,
+        scales: {
+            y: {
+                min: 0,
+                max: 5,
+                ticks: {
+                    stepSize: 1,
+                },
+                title: {
+                    display: true,
+                    text: "Average Rating",
+                },
             },
-        ],
+            x: {
+                title: {
+                    display: true,
+                    text: "Date",
+                },
+            },
+        },
     };
 
     const averageRating = (
-        evaluations.reduce((sum, evalItem) => sum + evalItem.rating, 0) /
+        evaluations.reduce((sum, evalItem) => sum + parseFloat(evalItem.rating), 0) /
         (evaluations.length || 1)
     ).toFixed(2);
 
@@ -267,60 +317,76 @@ export default function Show({ user, evaluations, metrics, attendances }) {
                     {/* Evaluation Summary and Charts */}
                     {user.role_names.includes("lecturer") && (
                         <>
-                            <div className="grid grid-cols-auto md:grid-cols-2 gap-6 ">
-                            {/* Evaluation Summary */}
-                            <div className="bg-white p-6 shadow rounded-2xl space-y-4 w-fit h-fit">
-                                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <Star className="text-yellow-500" />
-                                    Evaluation Summary
-                                </h3>
-                                <div className="text-gray-700 space-y-2">
-                                    <p className="flex items-center gap-2 text-base">
-                                        <CheckCircle
-                                            className="text-green-500"
-                                            size={20}
-                                        />
-                                        <span className="font-medium">
-                                            Total Evaluations:
-                                        </span>
-                                        <span className="text-lg font-bold">
-                                            {evaluations.length}
-                                        </span>
-                                    </p>
-                                    <p className="flex items-center gap-2 text-base">
-                                        <CheckCircle
-                                            className="text-blue-500"
-                                            size={20}
-                                        />
-                                        <span className="font-medium">
-                                            Average Rating:
-                                        </span>
-                                        <span className="text-lg font-bold">
-                                            {averageRating}
-                                        </span>
-                                    </p>
+                            <div className="grid grid-cols-auto md:grid-cols-12 gap-6 ">
+                                {/* Evaluation Summary */}
+                                <div className="bg-white p-6 shadow rounded-2xl space-y-4 w-fit h-fit md:col-span-2">
+                                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <Star className="text-yellow-500" />
+                                        Evaluation Summary
+                                    </h3>
+                                    <div className="text-gray-700 space-y-2">
+                                        <p className="flex items-center gap-2 text-base">
+                                            <CheckCircle
+                                                className="text-green-500"
+                                                size={20}
+                                            />
+                                            <span className="font-medium">
+                                                Total Evaluations:
+                                            </span>
+                                            <span className="text-lg font-bold">
+                                                {evaluations.length}
+                                            </span>
+                                        </p>
+                                        <p className="flex items-center gap-2 text-base">
+                                            <CheckCircle
+                                                className="text-blue-500"
+                                                size={20}
+                                            />
+                                            <span className="font-medium">
+                                                Average Rating:
+                                            </span>
+                                            <span className="text-lg font-bold">
+                                                {averageRating}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Line Chart */}
+                                <div className="bg-white p-6 shadow rounded-2xl md:col-span-8">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        Performance Trend (Line)
+                                    </h3>
+                                    <Line
+                                        data={lineChartData}
+                                        options={lineChartOptions}
+                                    />
+                                </div>
+
+                                {/* Bar Chart - now bigger and below, spanning both columns */}
+                                <div className="bg-white p-8 shadow rounded-2xl md:col-span-12">
+                                    <h3 className="text-xl font-semibold mb-6">
+                                        Performance by Metric (Bar)
+                                    </h3>
+                                    <Bar
+                                        data={barChartData}
+                                        height={120}
+                                        options={{
+                                            responsive: true,
+                                            scales: {
+                                                y: {
+                                                    min: 0,
+                                                    max: 5,
+                                                    ticks: {
+                                                        stepSize: 1,
+                                                    },
+                                                },
+                                            },
+                                        }}
+                                    />
                                 </div>
                             </div>
-
-                            {/* Bar Chart */}
-                            <div className="bg-white p-6 shadow rounded-2xl">
-                                <h3 className="text-lg font-semibold mb-4">
-                                    Performance by Metric (Bar)
-                                </h3>
-                                <Bar data={barChartData} />
-                            </div>
-
-                            {/* Line Chart */}
-                            <div className="bg-white p-6 shadow rounded-2xl md:col-span-2">
-                                <h3 className="text-lg font-semibold mb-4">
-                                    Performance Trend (Line)
-                                </h3>
-                                <Line data={lineChartData} />
-                            </div>
-
-                            
-                        </div>
-                        {/* Attendance Charts */}
+                            {/* Attendance Charts */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                                 {/* Donut Chart Card */}
                                 <div className="bg-white p-6 shadow rounded-2xl flex flex-col items-center">
